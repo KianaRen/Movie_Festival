@@ -1,0 +1,66 @@
+[
+    {
+        "id": 1,
+        "title": "The Matrix",
+        "year": 1999,
+        "genre": "Science Fiction",
+        "url": "https://upload.wikimedia.org/wikipedia/en/c/c1/The_Matrix_Poster.jpg",
+        "description": "A computer hacker learns from mysterious rebels about the true nature of his reality and his role in the war against its controllers."
+    },
+    {
+        "id": 2,
+        "title": "Interstellar",
+        "year": 2014,
+        "genre": "Science Fiction",
+        "url": "https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg",
+        "description": "A team of explorers must travel through a wormhole in space in an attempt to ensure humanity's survival."
+    },
+    {
+        "id": 3,
+        "title": "Hamilton",
+        "year": 2020,
+        "genre": "History",
+        "url": "https://upload.wikimedia.org/wikipedia/en/c/cb/Hamilton-poster.jpg",
+        "description": "The story of American Founding Father Alexander Hamilton, featuring a blend of hip-hop, jazz, R&B, and Broadway."
+    },
+    {
+        "id": 4,
+        "title": "Titanic",
+        "year": 1997,
+        "genre": "Romance",
+        "url": "https://upload.wikimedia.org/wikipedia/en/2/22/Titanic_poster.jpg",
+        "description": "A seventeen-year-old aristocrat falls in love with a kind but poor artist aboard the luxurious, ill-fated R.M.S. Titanic."
+    },
+    {
+        "id": 5,
+        "title": "The Dark Knight",
+        "year": 2008,
+        "genre": "Action, Crime, Drama",
+        "url": "https://upload.wikimedia.org/wikipedia/en/8/83/Dark_Knight.jpg",
+        "description": "Batman faces the Joker, a criminal mastermind who seeks to plunge Gotham City into anarchy."
+    },
+    {
+        "id": 6,
+        "title": "Inception",
+        "year": 2010,
+        "genre": "Action, Adventure, Science Fiction",
+        "url": "https://upload.wikimedia.org/wikipedia/en/7/7f/Inception_ver3.jpg",
+        "description": "A thief who enters the dreams of others to steal secrets from their subconscious is given the inverse task of planting an idea into the mind of a CEO."
+    },
+    {
+        "id": 7,
+        "title": "The Lion King",
+        "year": 1994,
+        "genre": "Animation, Adventure, Drama",
+        "url": "https://upload.wikimedia.org/wikipedia/en/3/3d/The_Lion_King_%28Disney_1994%29.jpg",
+        "description": "A young lion prince flees his kingdom only to learn the true meaning of responsibility and bravery."
+    },
+    {
+        "id": 8,
+        "title": "Gladiator",
+        "year": 2000,
+        "genre": "Action, Adventure, Drama",
+        "url": "https://upload.wikimedia.org/wikipedia/en/8/8d/Gladiator_ver1.jpg",
+        "description": "A betrayed Roman general seeks revenge against the corrupt emperor who murdered his family and sent him into slavery."
+    }
+]
