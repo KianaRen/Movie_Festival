@@ -34,7 +34,7 @@ CREATE TABLE ratings (
 
 -- Personality Table
 CREATE TABLE user_personality (
-    userId VARCHAR(255) PRIMARY KEY,
+    userId INT PRIMARY KEY, -- Changed VARCHAR(255) to INT
     openness DOUBLE,
     agreeableness DOUBLE,
     emotional_stability DOUBLE,
