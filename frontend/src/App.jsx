@@ -8,7 +8,7 @@ import Reports from './pages/Reports'
 import Analysis from './pages/Analysis'
 import NavBar from './components/NavBar'
 import {Routes, Route} from 'react-router-dom'
-import BreadCrumbs from './components/Breadcrumbs'
+import BreadCrumbs from './components/BreadCrumbs'
 import MovieDetail from './pages/MovieDetail'
 
 
