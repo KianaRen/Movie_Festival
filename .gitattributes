@@ -1,1 +1,4 @@
 database/Cleaned_IMDb_Movies_Data.csv filter=lfs diff=lfs merge=lfs -text
+database/cleaned/*.csv filter=lfs diff=lfs merge=lfs -text
+scripts/initdb.sql filter=lfs diff=lfs merge=lfs -text
+scripts/insert/*.sql filter=lfs diff=lfs merge=lfs -text
