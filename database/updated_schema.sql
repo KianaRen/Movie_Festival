@@ -1,11 +1,17 @@
 
 -- Drop existing tables (if they exist)
-DROP TABLE IF EXISTS movie_genres, list_movies, ratings, personality_rating, tags;
-DROP TABLE IF EXISTS movies, users, lists, genres, planner_user, user_personality, directors;
+DROP TABLE IF EXISTS movie_genres, list_movies, ratings, personality_rating, tags, movie_tags, movie_stars;
+DROP TABLE IF EXISTS movies, users, lists, genres, planner_user, user_personality, directors, stars;
 
 -- Users Table
 CREATE TABLE users (
     userId INT PRIMARY KEY AUTO_INCREMENT
+);
+
+-- Directors Table
+CREATE TABLE directors (
+    directorId INT PRIMARY KEY AUTO_INCREMENT,
+    directorName VARCHAR(255) UNIQUE NOT NULL
 );
 
 -- Movies Table
@@ -13,7 +19,6 @@ CREATE TABLE movies (
     movieId INT PRIMARY KEY AUTO_INCREMENT,
     imdbId INT UNIQUE,
     title VARCHAR(255) NOT NULL,
-    seriesTitle VARCHAR(255),
     releaseYear YEAR NOT NULL,
     directorId INT,
     runtime INT,
@@ -30,7 +35,7 @@ CREATE TABLE ratings (
     userId INT,
     movieId INT,
     rating DOUBLE,
-    timestamp INT(20),
+    timestamp DATETIME,
     FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE,
     FOREIGN KEY (movieId) REFERENCES movies(movieId) ON DELETE CASCADE
 );
@@ -51,8 +56,8 @@ CREATE TABLE personality_rating (
     useri VARCHAR(255),
     movieId INT,
     rating DOUBLE,
-    tstamp DATETIME,
-    FOREIGN KEY (useri) REFERENCES useri(user_personality) ON DELETE CASCADE,
+    timestamp DATETIME,
+    FOREIGN KEY (useri) REFERENCES user_personality(useri) ON DELETE CASCADE,
     FOREIGN KEY (movieId) REFERENCES movies(movieId) ON DELETE CASCADE
 );
 
@@ -71,10 +76,10 @@ CREATE TABLE movie_genres (
     FOREIGN KEY (genreId) REFERENCES genres(genreId) ON DELETE CASCADE
 );
 
--- Directors Table
-CREATE TABLE directors (
-    directorId INT PRIMARY KEY AUTO_INCREMENT,
-    directorName VARCHAR(255) UNIQUE NOT NULL
+-- Planner-user Table (For authentication)
+CREATE TABLE planner_user (
+    username VARCHAR(30) PRIMARY KEY,
+    password VARCHAR(255) NOT NULL
 );
 
 -- Lists Table (User-created movie lists)
@@ -97,15 +102,32 @@ CREATE TABLE list_movies (
 -- Tags Table
 CREATE TABLE tags (
     tagId INT PRIMARY KEY AUTO_INCREMENT,
-    userId INT,
-    movieId INT,
-    timestamp INT(20),
-    FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE,
-    FOREIGN KEY (movieId) REFERENCES movies(movieId) ON DELETE CASCADE
+    tag VARCHAR(255) UNIQUE NOT NULL
 );
 
--- Planner-user Table (For authentication)
-CREATE TABLE planner_user (
-    username VARCHAR(30) PRIMARY KEY,
-    password VARCHAR(255) NOT NULL
+-- MovieTags Table
+CREATE TABLE movie_tags (
+    movieTagId INT PRIMARY KEY AUTO_INCREMENT,
+    userId INT,
+    movieId INT,
+    tagId INT,
+    timestamp DATETIME,
+    FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE,
+    FOREIGN KEY (movieId) REFERENCES movies(movieId) ON DELETE CASCADE,
+    FOREIGN KEY (tagId) REFERENCES tags(tagId) ON DELETE CASCADE
+);
+
+-- Stars Table
+CREATE TABLE stars (
+    starId INT PRIMARY KEY AUTO_INCREMENT,
+    starName VARCHAR(255) UNIQUE NOT NULL
+);
+
+-- MovieStars Table
+CREATE TABLE movie_stars (
+    movieStarId INT PRIMARY KEY AUTO_INCREMENT,
+    movieId INT,
+    starId INT,
+    FOREIGN KEY (movieId) REFERENCES movies(movieId) ON DELETE CASCADE,
+    FOREIGN KEY (starId) REFERENCES stars(starId) ON DELETE CASCADE
 );
