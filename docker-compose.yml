@@ -1,0 +1,16 @@
+services:
+  mysql_db:
+    image: mysql:8.0
+    container_name: movie_festival_db
+    env_file: .env
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./database/updated_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./scripts/initdb.sql:/docker-entrypoint-initdb.d/02_initdb.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+
+volumes:
+  mysql-data:
