@@ -11,6 +11,25 @@ services:
       - ./scripts/initdb.sql:/docker-entrypoint-initdb.d/02_initdb.sql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+  
+  backend:
+    build: .
+    container_name: movie_festival_backend
+    restart: unless-stopped
+    depends_on:
+      mysql_db:
+        condition: service_healthy
+    ports:
+      - "5001:5000"
+    env_file: .env
+    environment:
+      - MYSQL_HOST=mysql_db
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=movie_festival
+    volumes:
+      - .:/app
+    command: python app.py
 
 volumes:
   mysql-data:
