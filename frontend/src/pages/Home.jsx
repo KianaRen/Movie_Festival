@@ -1,5 +1,6 @@
 import MovieCard from "../components/MovieCard"
 import { useState , useEffect} from "react";
+import axios from "axios";
 import '../css/Home.css'
 
 function Home(){
@@ -7,13 +8,10 @@ function Home(){
     const [movies, setMovies] = useState([]);
 
     useEffect(() => {
-        fetch("/movies.json")
-        .then((response) => response.json())
-        .then((data) => setMovies(data))
+        axios.get("http://localhost:5001/api/movies")  // API endpoint
+        .then((response) => setMovies(response.data))  // Store movies in state
         .catch((error) => console.error("Error fetching movies: ", error));
-    }, []
-
-    );
+    }, []);
 
     const handleSearch = (e) => {
         alert(searchQuery)
