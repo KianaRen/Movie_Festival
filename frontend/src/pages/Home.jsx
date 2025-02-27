@@ -8,7 +8,7 @@ function Home(){
     const [movies, setMovies] = useState([]);
 
     useEffect(() => {
-        axios.get("http://localhost:5001/api/movies")  // API endpoint
+        axios.get("/api/movies")
         .then((response) => setMovies(response.data))  // Store movies in state
         .catch((error) => console.error("Error fetching movies: ", error));
     }, []);
