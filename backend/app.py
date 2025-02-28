@@ -9,6 +9,8 @@ CORS(app)  # Enable CORS to allow frontend requests
 def get_movies():
     # Get pagination parameters from query string
     search_query = request.args.get('search', '').strip()
+    start_year = request.args.get("startYear", type=int)
+    end_year = request.args.get("endYear", type=int)
     page = request.args.get("page", default=1, type=int)
     limit = request.args.get("limit", default=50, type=int)
     offset = (page - 1) * limit
@@ -16,41 +18,54 @@ def get_movies():
     connection = get_db_connection()
     cursor = connection.cursor(dictionary=True)
 
+    conditions = []
+    params = []
+
     if search_query:
         search_pattern = f"%{search_query}%"
+        conditions.append("(movies.title LIKE %s OR directors.directorName LIKE %s OR stars.starName LIKE %s)")
+        params.extend([search_pattern, search_pattern, search_pattern])
 
-        # Count total matching movies
-        cursor.execute("""
-            SELECT COUNT(DISTINCT movies.movieId) AS total
-            FROM movies
-            LEFT JOIN directors ON movies.directorId = directors.directorId
-            LEFT JOIN movie_stars ON movies.movieId = movie_stars.movieId
-            LEFT JOIN stars ON movie_stars.starId = stars.starId
-            WHERE movies.title LIKE %s 
-               OR directors.directorName LIKE %s 
-               OR stars.starName LIKE %s;
-        """, (search_pattern, search_pattern, search_pattern))
-        total_movies = cursor.fetchone()["total"]
+    # Release year filtering
+    if start_year and end_year:
+        conditions.append("movies.releaseYear BETWEEN %s AND %s")
+        params.extend([start_year, end_year])
+    elif start_year:
+        conditions.append("movies.releaseYear >= %s")
+        params.append(start_year)
+    elif end_year:
+        conditions.append("movies.releaseYear <= %s")
+        params.append(end_year)
 
-        # Get movie details
-        cursor.execute("""
-            SELECT DISTINCT movies.* 
-            FROM movies
-            LEFT JOIN directors ON movies.directorId = directors.directorId
-            LEFT JOIN movie_stars ON movies.movieId = movie_stars.movieId
-            LEFT JOIN stars ON movie_stars.starId = stars.starId
-            WHERE movies.title LIKE %s 
-               OR directors.directorName LIKE %s 
-               OR stars.starName LIKE %s
-            LIMIT %s OFFSET %s;
-        """, (search_pattern, search_pattern, search_pattern, limit, offset))
-    else:
-        cursor.execute("SELECT COUNT(*) AS total FROM movies;")
-        total_movies = cursor.fetchone()["total"]
-        cursor.execute("SELECT * FROM movies LIMIT %s OFFSET %s;", (limit, offset))
-    
+    where_clause = " AND ".join(conditions) if conditions else "1=1"  # Ensures query is always valid
+
+    # Count total matching movies
+    count_query = f"""
+        SELECT COUNT(DISTINCT movies.movieId) AS total
+        FROM movies
+        LEFT JOIN directors ON movies.directorId = directors.directorId
+        LEFT JOIN movie_stars ON movies.movieId = movie_stars.movieId
+        LEFT JOIN stars ON movie_stars.starId = stars.starId
+        WHERE {where_clause};
+    """
+    cursor.execute(count_query, tuple(params))
+    total_movies = cursor.fetchone()["total"]
+
+    # Get movie details
+    fetch_query = f"""
+        SELECT DISTINCT movies.* 
+        FROM movies
+        LEFT JOIN directors ON movies.directorId = directors.directorId
+        LEFT JOIN movie_stars ON movies.movieId = movie_stars.movieId
+        LEFT JOIN stars ON movie_stars.starId = stars.starId
+        WHERE {where_clause}
+        LIMIT %s OFFSET %s;
+    """
+    cursor.execute(fetch_query, tuple(params + [limit, offset]))
+
+
     movies = cursor.fetchall()
-    
+
     cursor.close()
     connection.close()
 

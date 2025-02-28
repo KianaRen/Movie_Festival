@@ -8,9 +8,17 @@
   max-width: 600px;
   margin: 0 auto 2rem;
   display: flex;
+  flex-direction: column; /* Stack elements vertically */
   gap: 1rem;
   padding: 0 1rem;
   box-sizing: border-box;
+}
+
+/* Group the search input and button in a row */
+.search-bar {
+  display: flex;
+  gap: 10px; 
+  width: 100%;
 }
 
 .search-input {
@@ -74,4 +82,36 @@
   padding: 1rem;
   width: 100%;
   box-sizing: border-box;
+}
+
+.year-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px; 
+  width: 100%; 
+  flex-wrap: wrap; 
+  
+}
+
+.year-filter span {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+
+.year-input {
+  width: 80px;
+  height: 26px;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 2px;
+  background-color: #333;
+  color: white;
+  font-size: 1rem;
+}
+
+.year-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #666;
 }
