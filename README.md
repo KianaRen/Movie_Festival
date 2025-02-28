@@ -32,6 +32,8 @@ docker-compose up -d
 
 Depending on your hardware, it might take up to 20 minutes to initialise the database, as there are over 1 million SQL `INSERT` statements in `initdb.sql` to populate the entire database.
 
+After finish, webpage can be accessed through http://localhost:5173/.
+
 4. You should expect the following number of records for each of the entity if the setup is correct:
 ```
 mysql> SELECT 'directors' AS table_name, COUNT(*) AS `rows` FROM directors
