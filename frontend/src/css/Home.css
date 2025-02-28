@@ -42,6 +42,20 @@
   background-color: #f40612;
 }
 
+.page-button {
+  padding: 0.5rem 1.0rem;
+  background-color: #646cff;
+  color: white;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.page-button:hover {
+  background-color: #535bf2;
+}
+
 
 @media (max-width: 639px) {
   .home {

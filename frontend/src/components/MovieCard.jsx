@@ -8,7 +8,7 @@ function MovieCard({movie}){
     }
 
     return <div className="movie-card">
-        <Link to={`/dashboard/${movie.id}`} className="movie-link">
+        <Link to={`/dashboard/${movie.movieId}`} className="movie-link">
         <div className="movie-poster">
             <img src = {movie.posterURL} alt = {movie.title}/>
             <div className="movie-overlay">
