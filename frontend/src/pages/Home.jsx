@@ -10,19 +10,23 @@ function Home(){
     const [totalMovies, setTotalMovies] = useState(0);
     const limit = 50;  // 50 movies per page
 
+    const fetchMovies = () => {
+        axios.get(`/api/movies?page=${page}&limit=${limit}&search=${searchQuery}`)
+            .then((response) => {
+                setMovies(response.data.movies);
+                setTotalMovies(response.data.total);
+            })
+            .catch((error) => console.error("Error fetching movies: ", error));
+    };
+
     useEffect(() => {
-        axios.get(`/api/movies?page=${page}&limit=${limit}`)
-        .then((response) => {
-            setMovies(response.data.movies);
-            setTotalMovies(response.data.total);  // Store total movies count
-        })
-        .catch((error) => console.error("Error fetching movies: ", error));
+        fetchMovies();
     }, [page]); 
 
     const handleSearch = (e) => {
-        alert(searchQuery)
-        e.preventDefault()
-
+        e.preventDefault();
+        setPage(1);  // Reset to first page on search
+        fetchMovies();
     };
 
     return (
@@ -39,25 +43,29 @@ function Home(){
             </form>
 
             <div className="movies-grid">
-                {movies.map((movie) => (
-                    <MovieCard movie={movie} key={movie.id}/>
-                ))}
+                {movies.length > 0 ? (
+                    movies.map((movie) => (
+                        <MovieCard movie={movie} key={movie.movieId}/>
+                    ))
+                ) : (
+                    <p>No movies found.</p>
+                )}
             </div>
             <div className="pagination">
-                <button 
+                <button className="page-button"
                     onClick={() => setPage(page - 1)} 
                     disabled={page === 1}
                 >
-                    Previous
+                    Prev
                 </button>
 
                 <span> Page {page} of {Math.ceil(totalMovies / limit)} </span>
 
-                <button 
+                <button className="page-button"
                     onClick={() => setPage(page + 1)} 
                     disabled={page >= Math.ceil(totalMovies / limit)}
                 >
-                    Next
+                    Nexttt
                 </button>
             </div>
 
