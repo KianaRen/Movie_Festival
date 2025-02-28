@@ -11,7 +11,11 @@ def get_movies():
     search_query = request.args.get('search', '').strip()
     start_year = request.args.get("startYear", type=int)
     end_year = request.args.get("endYear", type=int)
+    min_runtime = request.args.get("minRuntime", type=int)
+    max_runtime = request.args.get("maxRuntime", type=int)
     page = request.args.get("page", default=1, type=int)
+    genres = request.args.get("genres", "").split(",") if request.args.get("genres") else []
+    tags = request.args.get("tags", "").split(",") if request.args.get("tags") else []
     limit = request.args.get("limit", default=50, type=int)
     offset = (page - 1) * limit
 
@@ -37,7 +41,44 @@ def get_movies():
         conditions.append("movies.releaseYear <= %s")
         params.append(end_year)
 
-    where_clause = " AND ".join(conditions) if conditions else "1=1"  # Ensures query is always valid
+    # Runtime filtering
+    if min_runtime and max_runtime:
+        conditions.append("movies.runtime BETWEEN %s AND %s")
+        params.extend([min_runtime, max_runtime])
+    elif min_runtime:
+        conditions.append("movies.runtime >= %s")
+        params.append(min_runtime)
+    elif max_runtime:
+        conditions.append("movies.runtime <= %s")
+        params.append(max_runtime)
+    
+    # Genre filtering
+    if genres:
+        genre_placeholders = ', '.join(['%s'] * len(genres))
+        genre_subquery = f"""
+            movies.movieId IN (
+                SELECT movie_genres.movieId FROM movie_genres 
+                JOIN genres ON movie_genres.genreId = genres.genreId 
+                WHERE genres.genre IN ({genre_placeholders})
+            )
+        """
+        conditions.append(genre_subquery)
+        params.extend(genres)
+    
+    if tags:
+        tag_placeholders = ', '.join(['%s'] * len(tags))  # Correct placeholders
+        conditions.append(f"""
+            movies.movieId IN (
+                SELECT movie_tags.movieId
+                FROM movie_tags
+                JOIN tags ON movie_tags.tagId = tags.tagId
+                WHERE tags.tag IN ({tag_placeholders})
+            )
+        """)
+        params.extend(tags)  # Add each tag to parameters
+
+
+    where_clause = " AND ".join(conditions) if conditions else "1=1"  
 
     # Count total matching movies
     count_query = f"""
@@ -46,6 +87,8 @@ def get_movies():
         LEFT JOIN directors ON movies.directorId = directors.directorId
         LEFT JOIN movie_stars ON movies.movieId = movie_stars.movieId
         LEFT JOIN stars ON movie_stars.starId = stars.starId
+        LEFT JOIN movie_genres ON movies.movieId = movie_genres.movieId
+        LEFT JOIN genres ON movie_genres.genreId = genres.genreId
         WHERE {where_clause};
     """
     cursor.execute(count_query, tuple(params))
@@ -58,12 +101,12 @@ def get_movies():
         LEFT JOIN directors ON movies.directorId = directors.directorId
         LEFT JOIN movie_stars ON movies.movieId = movie_stars.movieId
         LEFT JOIN stars ON movie_stars.starId = stars.starId
+        LEFT JOIN movie_genres ON movies.movieId = movie_genres.movieId
+        LEFT JOIN genres ON movie_genres.genreId = genres.genreId
         WHERE {where_clause}
         LIMIT %s OFFSET %s;
     """
     cursor.execute(fetch_query, tuple(params + [limit, offset]))
-
-
     movies = cursor.fetchall()
 
     cursor.close()
@@ -133,6 +176,33 @@ def get_movie_details(movie_id):
 
     return jsonify(movie)
 
+
+@app.route('/api/genres', methods=['GET'])
+def get_genres():
+    """ Fetch all available genres for filtering """
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute("SELECT DISTINCT genre FROM genres WHERE genreId != 20;")
+    genres = [row["genre"] for row in cursor.fetchall()]
+
+    cursor.close()
+    connection.close()
+
+    return jsonify({"genres": genres})
+
+@app.route('/api/tags', methods=['GET'])
+def get_tags():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute("SELECT DISTINCT tagId, tag FROM tags;")
+    tags = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    return jsonify(tags)
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)

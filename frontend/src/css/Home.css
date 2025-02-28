@@ -5,7 +5,7 @@
 }
 
 .search-form {
-  max-width: 600px;
+  max-width: 700px;
   margin: 0 auto 2rem;
   display: flex;
   flex-direction: column; /* Stack elements vertically */
@@ -49,6 +49,21 @@
 .search-button:hover {
   background-color: #f40612;
 }
+
+.clear-button {
+  background-color: #ff6b6b;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  margin-left: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.clear-button:hover {
+  background-color: #ff4c4c;
+}
+
 
 .page-button {
   padding: 0.5rem 1.0rem;
@@ -114,4 +129,90 @@
 .year-input:focus {
   outline: none;
   box-shadow: 0 0 0 2px #666;
+}
+
+.genres-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.genre-item {
+  padding: 4px 8px;
+  background-color: #444;
+  color: white;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 10px;
+  transition: 0.3s;
+}
+
+.genre-item.selected {
+  background-color: #535bf2; 
+}
+
+/* Tag filter container: Use flexbox to align dropdown and selected tags in one row */
+.tag-filter {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  font-size: 16px;
+}
+
+/* Dropdown (multi-select) styling */
+.tag-dropdown {
+  width: 250px; /* Adjust width */
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Ensure options have proper spacing */
+.tag-dropdown option {
+  padding: 5px;
+}
+
+/* Selected tags container: Moves it to the right */
+.selected-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: 50%;
+  justify-content: flex-end; /* Align tags to the right */
+}
+
+/* Individual selected tag */
+.selected-tag {
+  display: flex;
+  align-items: center;
+  background-color: #007bff;
+  color: white;
+  padding: 2px 5px;
+  border-radius: 7px;
+  font-size: 10px;
+}
+
+/* Remove (X) button */
+.remove-tag {
+  background: none;
+  border: none;
+  color: white;
+  font-weight: bold;
+  margin-left: 5px;
+  cursor: pointer;
+}
+
+.remove-tag:hover {
+  color: #ffdddd;
+}
+
+.tag-warning {
+  color: red;
+  font-size: 14px;
+  margin-top: 5px;
 }
