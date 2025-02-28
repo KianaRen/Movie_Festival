@@ -18,9 +18,32 @@ def get_movies():
 
     if search_query:
         search_pattern = f"%{search_query}%"
-        cursor.execute("SELECT COUNT(*) AS total FROM movies WHERE title LIKE %s;", (search_pattern,))
+
+        # Count total matching movies
+        cursor.execute("""
+            SELECT COUNT(DISTINCT movies.movieId) AS total
+            FROM movies
+            LEFT JOIN directors ON movies.directorId = directors.directorId
+            LEFT JOIN movie_stars ON movies.movieId = movie_stars.movieId
+            LEFT JOIN stars ON movie_stars.starId = stars.starId
+            WHERE movies.title LIKE %s 
+               OR directors.directorName LIKE %s 
+               OR stars.starName LIKE %s;
+        """, (search_pattern, search_pattern, search_pattern))
         total_movies = cursor.fetchone()["total"]
-        cursor.execute("SELECT * FROM movies WHERE title LIKE %s LIMIT %s OFFSET %s;", (search_pattern, limit, offset))
+
+        # Get movie details
+        cursor.execute("""
+            SELECT DISTINCT movies.* 
+            FROM movies
+            LEFT JOIN directors ON movies.directorId = directors.directorId
+            LEFT JOIN movie_stars ON movies.movieId = movie_stars.movieId
+            LEFT JOIN stars ON movie_stars.starId = stars.starId
+            WHERE movies.title LIKE %s 
+               OR directors.directorName LIKE %s 
+               OR stars.starName LIKE %s
+            LIMIT %s OFFSET %s;
+        """, (search_pattern, search_pattern, search_pattern, limit, offset))
     else:
         cursor.execute("SELECT COUNT(*) AS total FROM movies;")
         total_movies = cursor.fetchone()["total"]
