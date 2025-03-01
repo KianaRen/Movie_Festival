@@ -204,6 +204,81 @@ def get_tags():
 
     return jsonify(tags)
 
+# For Popularity Report (Plot 1: Number of movies per genre)
+@app.route('/api/stats/movies-per-genre')
+def movies_per_genre():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    
+    cursor.execute("""
+        SELECT COUNT(*) AS count, g.genre
+        FROM genres g
+        JOIN movie_genres mg ON mg.genreId = g.genreId
+        GROUP BY g.genre;
+    """)
+    data = cursor.fetchall()
+    cursor.close()
+    connection.close()
+    return jsonify(data)
+
+# For Popularity Report (Plot 2: Average box office per genre)
+@app.route('/api/stats/avg-boxoffice')
+def avg_boxoffice():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    
+    cursor.execute("""
+        SELECT ROUND(AVG(m.boxOffice), -2) AS average, g.genre
+        FROM genres g
+        JOIN movie_genres mg ON g.genreId = mg.genreId
+        JOIN movies m ON mg.movieId = m.movieId
+        GROUP BY g.genre;
+    """)
+    data = cursor.fetchall()
+    cursor.close()
+    connection.close()
+    return jsonify(data)
+
+# For Popularity Report (Plot 3: Average rating per genre)
+@app.route('/api/stats/avg-rating')
+def avg_rating():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    
+    cursor.execute("""
+        SELECT ROUND(AVG(r.rating), 2) AS average, g.genre
+        FROM genres g
+        JOIN movie_genres mg ON g.genreId = mg.genreId
+        JOIN movies m ON mg.movieId = m.movieId
+        JOIN ratings r ON r.movieId = m.movieId
+        GROUP BY g.genre;
+    """)
+    data = cursor.fetchall()
+    cursor.close()
+    connection.close()
+    return jsonify(data)
+
+# For Popularity Report (Plot 4: Extreme rating %)
+@app.route('/api/stats/extreme-ratings')
+def extreme_ratings():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    
+    cursor.execute("""
+        SELECT 
+            g.genre, 
+            ROUND(COUNT(CASE WHEN r.rating = 1 OR r.rating = 5 THEN 1 END) * 100.0 / COUNT(*), 1) AS percentage
+        FROM genres g
+        JOIN movie_genres mg ON g.genreId = mg.genreId
+        JOIN movies m ON mg.movieId = m.movieId
+        JOIN ratings r ON r.movieId = m.movieId
+        GROUP BY g.genre;
+    """)
+    data = cursor.fetchall()
+    cursor.close()
+    connection.close()
+    return jsonify(data)
+
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)
 
