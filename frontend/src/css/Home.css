@@ -51,7 +51,7 @@
 }
 
 .clear-button {
-  background-color: #ff6b6b;
+  background-color: #046cdb;
   color: white;
   border: none;
   padding: 8px 12px;
@@ -163,11 +163,12 @@
 
 /* Dropdown (multi-select) styling */
 .tag-dropdown {
+  color: #cecece;  /* Dark gray text */
   width: 250px; /* Adjust width */
   padding: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid #989797;
   border-radius: 5px;
-  background-color: #fff;
+  background-color: #454545;
   font-size: 14px;
   cursor: pointer;
 }
@@ -190,7 +191,7 @@
 .selected-tag {
   display: flex;
   align-items: center;
-  background-color: #007bff;
+  background-color: #646cff;
   color: white;
   padding: 2px 5px;
   border-radius: 7px;
