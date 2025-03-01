@@ -47,11 +47,12 @@ services:
       - backend_network
     volumes:
     - ./frontend:/app
-    - /app/node_modules
+    - frontend-node-modules:/app/node_modules
     command: npm run dev
 
 volumes:
   mysql-data:
+  frontend-node-modules:
 
 networks:
   backend_network:
