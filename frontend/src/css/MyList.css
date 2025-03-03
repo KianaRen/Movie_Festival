@@ -50,3 +50,41 @@
   animation: fadeIn 0.3s ease-out forwards;
 }
 
+.movie-item {
+  position: relative;
+  display: inline-block;
+}
+
+
+.button-container {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 10;
+}
+
+
+.remove-button {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s ease-in-out;
+  z-index: 10;
+}
+
+
+.remove-button:hover {
+  background-color: #cc0000;
+}
+
+
