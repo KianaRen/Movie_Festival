@@ -1,11 +1,22 @@
 import { Link } from 'react-router-dom'
 import '../css/MovieCard.css'
+import axios from "axios";
 
 function MovieCard({movie}){
 
-    function onListBtnClick(){
-        alert("clicked")
-    }
+    async function onListBtnClick(event) {
+        event.preventDefault(); 
+    
+        try {
+          await axios.post("/api/mylist/add", {
+            movie_id: movie.movieId,
+          });
+          //alert("Movie added to your list!"); 
+        } catch (error) {
+          console.error("Error adding movie:", error);
+          alert("Failed to add movie. Please try again.");
+        }
+      }
 
     return <div className="movie-card">
         <Link to={`/dashboard/${movie.movieId}`} className="movie-link">
