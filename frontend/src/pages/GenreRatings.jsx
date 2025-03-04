@@ -105,15 +105,15 @@ function GenreRatings() {
           <button 
             style={{
               padding: '12px 24px',
-              backgroundColor: '#f5f3f3',
-              color: 'black',
+              backgroundColor: 'rgba(116, 170, 250, 0.97)',
+              color: 'white',
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
               fontSize: 16,
               transition: 'background-color 0.3s',
               ':hover': {
-                backgroundColor: '#e0e0e0'
+                backgroundColor: 'rgba(79, 148, 252, 0.97)'
               }
             }}
           >
@@ -147,7 +147,7 @@ function GenreRatings() {
         {/* Chart */}
         {ratingData && (
           <div style={{ 
-            backgroundColor: 'rgba(243, 240, 232, 0.89)', 
+            backgroundColor: 'rgba(245, 243, 243, 0.97)', 
             padding: '30px', 
             borderRadius: '8px',  
             height: '500px', 

@@ -428,6 +428,7 @@ def movies_per_genre():
         SELECT COUNT(*) AS count, g.genre
         FROM genres g
         JOIN movie_genres mg ON mg.genreId = g.genreId
+        WHERE g.genreId != 20
         GROUP BY g.genre;
     """)
     data = cursor.fetchall()
@@ -446,6 +447,7 @@ def avg_boxoffice():
         FROM genres g
         JOIN movie_genres mg ON g.genreId = mg.genreId
         JOIN movies m ON mg.movieId = m.movieId
+        WHERE g.genreId != 20
         GROUP BY g.genre;
     """)
     data = cursor.fetchall()
@@ -465,6 +467,7 @@ def avg_rating():
         JOIN movie_genres mg ON g.genreId = mg.genreId
         JOIN movies m ON mg.movieId = m.movieId
         JOIN ratings r ON r.movieId = m.movieId
+        WHERE g.genreId != 20
         GROUP BY g.genre;
     """)
     data = cursor.fetchall()
@@ -486,12 +489,50 @@ def extreme_ratings():
         JOIN movie_genres mg ON g.genreId = mg.genreId
         JOIN movies m ON mg.movieId = m.movieId
         JOIN ratings r ON r.movieId = m.movieId
+        WHERE g.genreId != 20
         GROUP BY g.genre;
     """)
     data = cursor.fetchall()
     cursor.close()
     connection.close()
     return jsonify(data)
+
+# Fetch rating distribution for a genre
+@app.route('/api/genre-ratings')
+def get_genre_ratings():
+    """ Get rating distribution for a specific genre """
+    genre = request.args.get('genre')
+    
+    if not genre:
+        return jsonify({"error": "Genre parameter is required"}), 400
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute("""
+            SELECT 
+                r.rating, 
+                COUNT(*) AS frequency
+            FROM genres g
+            JOIN movie_genres mg ON g.genreId = mg.genreId
+            JOIN movies m ON mg.movieId = m.movieId
+            JOIN ratings r ON r.movieId = m.movieId
+            WHERE g.genre = %s
+            GROUP BY r.rating
+            ORDER BY r.rating ASC;
+        """, (genre,))
+        
+        data = cursor.fetchall()
+        return jsonify(data)
+        
+    except Exception as e:
+        print("Database error:", str(e))
+        return jsonify({"error": "Database error"}), 500
+        
+    finally:
+        cursor.close()
+        connection.close()
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)
