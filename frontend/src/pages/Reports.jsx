@@ -74,11 +74,11 @@ function Reports() {
               fontSize: 16,
               transition: 'background-color 0.3s',
               ':hover': {
-                backgroundColor: '#1976D2'
+                backgroundColor: 'rgba(79, 148, 252, 0.97)'
               }
             }}
           >
-            View Genre Ratings ➔
+            View Genre Ratings →
           </button>
         </Link>
       </div>
