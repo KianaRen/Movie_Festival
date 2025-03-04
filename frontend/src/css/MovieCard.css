@@ -26,6 +26,7 @@
 }
 
 .movie-overlay {
+  z-index: 1; /* Lower z-index */
   position: absolute;
   top: 0;
   left: 0;
@@ -106,6 +107,27 @@
   color: #ffd700;
   font-size: 0.9rem;
   margin-top: auto;
+}
+
+.movie-link {
+  position: relative;
+  z-index: 1; /* Ensure other elements don't overlap */
+}
+
+.list-select {
+  z-index: 10; /* Higher z-index for the select dropdown */
+  position: relative;
+  cursor: pointer;
+}
+
+select {
+  position: relative; 
+  z-index: 15; /* Ensures the dropdown is above everything else */
+  padding: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 4px;
 }
 
 @media (max-width: 768px) {
