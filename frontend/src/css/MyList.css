@@ -87,4 +87,37 @@
   background-color: #cc0000;
 }
 
+.my-list-container {
+  max-width: 800px;
+  margin: auto;
+  padding: 20px;
+}
+
+.movie-list-section {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.list-description {
+  font-style: italic;
+  color: #555;
+}
+
+.genre-section {
+  margin-top: 10px;
+}
+
+.movie-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.error {
+  color: red;
+  font-weight: bold;
+}
+
 

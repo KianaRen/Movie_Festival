@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import '../css/MovieCard.css';
 import axios from "axios";
 
-function MovieListCard({ movie, onDelete }) {
+function MovieListCard({ movie, onRemove }) {
 
     return (
         <div className="movie-card">
@@ -17,6 +17,7 @@ function MovieListCard({ movie, onDelete }) {
                     <h3>{movie.title}</h3>
                     <p>{movie.releaseYear}</p>
                     <p>{movie.criticScore}</p>
+                    <button className="remove-button" onClick={onRemove}>Remove</button>
                 </div>
             </Link>
         </div>

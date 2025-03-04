@@ -5,37 +5,111 @@ from database.db import get_db_connection  # Import database connection
 app = Flask(__name__)
 CORS(app)  # Enable CORS to allow frontend requests
 
-# Add a movie to the user's list
-@app.route('/api/mylist/add', methods=['POST'])
-def add_to_list():
-    data = request.json
-    movie_id = data.get('movie_id')
-    list_id = data.get('list_id')
-    user_id = 1 #placeholder before implementing user authentication
 
-    if not user_id or not movie_id or not list_id:
-        return jsonify({"error": "Missing user_id or movie_id or not list_id"}), 400
+PLACEHOLDER_USER_ID = 1 
+def get_authenticated_user():
+    return PLACEHOLDER_USER_ID  # Replace with actual session or token-based authentication
+
+# create a new list for the user
+@app.route('/api/mylist/create', methods=['POST'])
+def create_list():
+    user_id = get_authenticated_user()
+    if not user_id:
+        return jsonify({"error": "User not authenticated"}), 403  # Forbidden
+    
+    data = request.json
+    list_title = data.get("listTitle")
+    list_description = data.get("listDescription")
+
+    if not list_title:
+        return jsonify({"error": "List title is required"}), 400
 
     connection = get_db_connection()
     cursor = connection.cursor()
 
     try:
-        # Check if the movie is already in the user's list
         cursor.execute(
-            "SELECT * FROM user_movie_list WHERE user_id = %s AND movie_id = %s;",
-            (user_id, movie_id)
-        )
-        existing_entry = cursor.fetchone()
-
-        if existing_entry:
-            return jsonify({"message": "Movie already in list"}), 200
-        
-        # Insert into user_movie_list
-        cursor.execute(
-            "INSERT INTO user_movie_list (user_id, movie_id) VALUES (%s, %s);",
-            (user_id, movie_id)
+            "INSERT INTO lists (listTitle, listDescription, plannerUserId) VALUES (%s, %s, %s);",
+            (list_title, list_description, user_id)
         )
         connection.commit()
+        return jsonify({"message": "List created successfully"}), 201
+    
+    except Exception as e:
+        connection.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        connection.close()
+
+# fetch all the lists created by the user
+@app.route('/api/mylist', methods=['GET'])
+def get_user_lists():
+    user_id = get_authenticated_user()
+    if not user_id:
+        return jsonify({"error": "User not authenticated"}), 403  # Forbidden
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        # Fetch all lists created by the user
+        cursor.execute("SELECT * FROM lists WHERE plannerUserId = %s;", (user_id,))
+        lists = cursor.fetchall()
+
+        # Fetch movies for each list
+        lists_with_movies = {}
+        for list_item in lists:
+            list_id = list_item["listId"]
+            cursor.execute("""
+                SELECT 
+                    m.movieId, m.title, m.releaseYear, m.runtime, m.posterURL 
+                FROM list_movies lm
+                JOIN movies m ON lm.movieId = m.movieId
+                WHERE lm.listId = %s;
+            """, (list_id,))
+            
+            movies = cursor.fetchall()
+            list_item["movies"] = movies
+            lists_with_movies[list_id] = list_item
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        connection.close()
+
+    return jsonify(lists_with_movies)
+
+
+# Add a movie to the user's list
+@app.route('/api/mylist/add', methods=['POST'])
+def add_to_list():
+    """Add a movie to the user's list."""
+    user_id = get_authenticated_user()
+    if not user_id:
+        return jsonify({"error": "User not authenticated"}), 403
+
+    data = request.json
+    movie_id = data.get('movie_id')
+    list_id = data.get('list_id')
+
+    if not movie_id or not list_id:
+        return jsonify({"error": "Missing movie_id or list_id"}), 400
+
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    try:
+        # Verify list ownership
+        cursor.execute("SELECT * FROM lists WHERE listId = %s AND plannerUserId = %s;", (list_id, user_id))
+        if not cursor.fetchone():
+            return jsonify({"error": "List not found or does not belong to user"}), 403
+
+        # Add movie to list
+        cursor.execute("INSERT INTO list_movies (listId, movieId) VALUES (%s, %s);", (list_id, movie_id))
+        connection.commit()
+        return jsonify({"message": "Movie added to list"}), 200
 
     except Exception as e:
         connection.rollback()
@@ -44,16 +118,50 @@ def add_to_list():
         cursor.close()
         connection.close()
 
-    return jsonify({"message": "Movie added to list"}), 201
+# Remove Movie from User's List
+@app.route('/api/mylist/remove', methods=['POST'])
+def remove_movie_from_list():
+    user_id = get_authenticated_user()
+    if not user_id:
+        return jsonify({"error": "User not authenticated"}), 403
 
+    data = request.json
+    movie_id = data.get("movie_id")
+    list_id = data.get("list_id")
+
+    if not movie_id or not list_id:
+        return jsonify({"error": "Missing movie_id or list_id"}), 400
+
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    try:
+        # Verify list ownership
+        cursor.execute("SELECT * FROM lists WHERE listId = %s AND plannerUserId = %s;", (list_id, user_id))
+        if not cursor.fetchone():
+            return jsonify({"error": "List not found or does not belong to user"}), 403
+
+        # Remove the movie from the list
+        cursor.execute("DELETE FROM list_movies WHERE listId = %s AND movieId = %s;", (list_id, movie_id))
+        connection.commit()
+
+        if cursor.rowcount == 0:
+            return jsonify({"message": "Movie not found in list"}), 404
+        return jsonify({"message": "Movie removed from list"}), 200
+
+    except Exception as e:
+        connection.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        connection.close()
 
 #  Fetch movies in the user's list, grouped by genre
-@app.route('/api/mylist', methods=['GET'])
-def get_user_list():
-    user_id = 1 #placeholder before implementing user authentication
-
+@app.route('/api/mylist/grouped', methods=['GET'])
+def get_user_list_grouped_by_genre():
+    user_id = get_authenticated_user()
     if not user_id:
-        return jsonify({"error": "Missing user_id"}), 400
+        return jsonify({"error": "User not authenticated"}), 403
 
     connection = get_db_connection()
     cursor = connection.cursor(dictionary=True)
@@ -61,73 +169,54 @@ def get_user_list():
     try:
         cursor.execute("""
             SELECT 
-                g.genre, 
+                l.listId,
+                l.listTitle,
+                l.listDescription,
+                COALESCE(g.genre, 'No Genre') AS genre, 
                 m.movieId, 
                 m.title, 
                 m.releaseYear, 
                 m.runtime, 
-                m.posterURL 
-            FROM user_movie_list uml
-            JOIN movies m ON uml.movie_id = m.movieId
-            JOIN movie_genres mg ON m.movieId = mg.movieId
-            JOIN genres g ON mg.genreId = g.genreId
-            WHERE uml.user_id = %s
-            ORDER BY g.genre, m.title;
+                m.posterURL
+            FROM lists l
+            LEFT JOIN list_movies lm ON l.listId = lm.listId
+            LEFT JOIN movies m ON lm.movieId = m.movieId
+            LEFT JOIN movie_genres mg ON m.movieId = mg.movieId
+            LEFT JOIN genres g ON mg.genreId = g.genreId
+            WHERE l.plannerUserId = %s
+            ORDER BY l.listTitle, g.genre, m.title;
         """, (user_id,))
+
         
         movies = cursor.fetchall()
-        
-        # Group movies by genre
-        movie_list = {}
+
+        # Group movies by list and genre
+        user_lists = {}
         for movie in movies:
-            genre = movie.pop("genre")  # Remove genre key from movie dict
-            if genre not in movie_list:
-                movie_list[genre] = []
-            movie_list[genre].append(movie)
-        
+            list_id = movie.pop("listId")
+            list_title = movie.pop("listTitle")
+            list_desc = movie.pop("listDescription")
+            genre = movie.pop("genre")
+
+            if list_id not in user_lists:
+                user_lists[list_id] = {
+                    "listTitle": list_title,
+                    "listDescription": list_desc,
+                    "moviesByGenre": {}
+                }
+            if genre not in user_lists[list_id]["moviesByGenre"]:
+                user_lists[list_id]["moviesByGenre"][genre] = []
+
+            user_lists[list_id]["moviesByGenre"][genre].append(movie)
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
         cursor.close()
         connection.close()
 
-    return jsonify(movie_list)
+    return jsonify(user_lists)
 
-
-# Remove Movie from User's List
-@app.route('/api/mylist/remove', methods=['POST'])
-def remove_movie_from_list():
-    """
-    Remove a movie from the user's list.
-    """
-    data = request.json
-    movie_id = data.get("movie_id")
-
-    user_id = 1  # placeholder before implementing user authentication
-
-    if not movie_id:
-        return jsonify({"error": "Missing movie_id"}), 400
-
-    connection = get_db_connection()
-    cursor = connection.cursor()
-
-    try:
-        cursor.execute(
-            "DELETE FROM user_movie_list WHERE user_id = %s AND movie_id = %s;",
-            (user_id, movie_id)
-        )
-        connection.commit()
-        
-        if cursor.rowcount == 0:
-            return jsonify({"message": "Movie not found in list"}), 404
-    except Exception as e:
-        connection.rollback()
-        return jsonify({"error": str(e)}), 500
-    finally:
-        cursor.close()
-        connection.close()
-
-    return jsonify({"message": "Movie removed from list"}), 200
 
 
 @app.route('/api/movies', methods=['GET'])
@@ -392,7 +481,7 @@ def extreme_ratings():
     cursor.execute("""
         SELECT 
             g.genre, 
-            ROUND(COUNT(CASE WHEN r.rating =0.5 OR r.rating =5 THEN 1 END) * 100.0 / COUNT(*), 1) AS percentage
+            ROUND(COUNT(CASE WHEN r.rating = 1 OR r.rating = 5 THEN 1 END) * 100.0 / COUNT(*), 1) AS percentage
         FROM genres g
         JOIN movie_genres mg ON g.genreId = mg.genreId
         JOIN movies m ON mg.movieId = m.movieId
@@ -403,43 +492,6 @@ def extreme_ratings():
     cursor.close()
     connection.close()
     return jsonify(data)
-
-# Fetch rating distribution for a genre
-@app.route('/api/genre-ratings')
-def get_genre_ratings():
-    """ Get rating distribution for a specific genre """
-    genre = request.args.get('genre')
-    
-    if not genre:
-        return jsonify({"error": "Genre parameter is required"}), 400
-
-    connection = get_db_connection()
-    cursor = connection.cursor(dictionary=True)
-
-    try:
-        cursor.execute("""
-            SELECT 
-                r.rating, 
-                COUNT(*) AS frequency
-            FROM genres g
-            JOIN movie_genres mg ON g.genreId = mg.genreId
-            JOIN movies m ON mg.movieId = m.movieId
-            JOIN ratings r ON r.movieId = m.movieId
-            WHERE g.genre = %s
-            GROUP BY r.rating
-            ORDER BY r.rating ASC;
-        """, (genre,))
-        
-        data = cursor.fetchall()
-        return jsonify(data)
-        
-    except Exception as e:
-        print("Database error:", str(e))
-        return jsonify({"error": "Database error"}), 500
-        
-    finally:
-        cursor.close()
-        connection.close()
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)
