@@ -78,8 +78,10 @@ CREATE TABLE movie_genres (
 
 -- Planner-user Table (For authentication)
 CREATE TABLE planner_user (
-    username VARCHAR(30) PRIMARY KEY,
-    password VARCHAR(255) NOT NULL
+    planner_userId INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(30) UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    passwordSalt BINARY(16) NOT NULL
 );
 
 -- Lists Table (User-created movie lists)
