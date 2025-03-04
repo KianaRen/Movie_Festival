@@ -5,15 +5,16 @@ from database.db import get_db_connection  # Import database connection
 app = Flask(__name__)
 CORS(app)  # Enable CORS to allow frontend requests
 
-# 🛠️Add a movie to the user's list
+# Add a movie to the user's list
 @app.route('/api/mylist/add', methods=['POST'])
 def add_to_list():
     data = request.json
     movie_id = data.get('movie_id')
+    list_id = data.get('list_id')
     user_id = 1 #placeholder before implementing user authentication
 
-    if not user_id or not movie_id:
-        return jsonify({"error": "Missing user_id or movie_id"}), 400
+    if not user_id or not movie_id or not list_id:
+        return jsonify({"error": "Missing user_id or movie_id or not list_id"}), 400
 
     connection = get_db_connection()
     cursor = connection.cursor()
