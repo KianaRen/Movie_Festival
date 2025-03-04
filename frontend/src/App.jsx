@@ -11,6 +11,9 @@ import {Routes, Route} from 'react-router-dom'
 import BreadCrumbs from './components/BreadCrumbs'
 import MovieDetail from './pages/MovieDetail'
 import GenreRatings from './pages/GenreRatings'
+import AudienceRating from './pages/AudienceRating'
+import PredictRatings from './pages/PredictRatings'
+import ViewerPersonality from './pages/ViewerPersonality'
 
 
 
@@ -26,6 +29,9 @@ function App() {
           <Route path="/dashboard" element={<Home />} />
           <Route path="/mylist" element = {<MyList />}/>
           <Route path="/analysis" element = {<Analysis />}/>
+          <Route path="/audience-rating" element = {<AudienceRating />}/>
+          <Route path="/predict-ratings" element = {<PredictRatings />}/>
+          <Route path="/viewer-personality" element = {<ViewerPersonality />}/>
           <Route path="/reports" element = {<Reports />}/>
           <Route path="/genre-ratings" element={<GenreRatings />} />
           <Route path="/dashboard/:id" element={<MovieDetail />}></Route>
