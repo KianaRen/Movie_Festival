@@ -88,8 +88,8 @@ CREATE TABLE planner_user (
 CREATE TABLE lists (
     listId INT PRIMARY KEY AUTO_INCREMENT,
     listTitle VARCHAR(255),
-    username VARCHAR(30),
-    FOREIGN KEY (username) REFERENCES planner_user(username) ON DELETE CASCADE
+    planner_userId INT,
+    FOREIGN KEY (planner_userId) REFERENCES planner_user(planner_userId) ON DELETE CASCADE
 );
 
 -- Movie-Lists Relationship Table (Many-to-Many)
