@@ -134,7 +134,7 @@ function Reports() {
 
         {/* Extreme Ratings */}
         <div style={{ backgroundColor: 'rgba(245, 243, 243, 0.97)', padding: '30px', borderRadius: '8px',  height: '400px', position: 'relative' }}>
-          <h3 style={{ color: 'black' }}>Percentage of Extreme Ratings (1 or 5 stars)</h3>
+          <h3 style={{ color: 'black' }}>Percentage of Extreme Ratings (0.5 or 5 stars)</h3>
           {extremeRatings && (
             <Bar
               data={createChartData(
