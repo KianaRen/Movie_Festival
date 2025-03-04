@@ -391,7 +391,7 @@ def extreme_ratings():
     cursor.execute("""
         SELECT 
             g.genre, 
-            ROUND(COUNT(CASE WHEN r.rating = 1 OR r.rating = 5 THEN 1 END) * 100.0 / COUNT(*), 1) AS percentage
+            ROUND(COUNT(CASE WHEN r.rating =0.5 OR r.rating =5 THEN 1 END) * 100.0 / COUNT(*), 1) AS percentage
         FROM genres g
         JOIN movie_genres mg ON g.genreId = mg.genreId
         JOIN movies m ON mg.movieId = m.movieId
@@ -402,6 +402,43 @@ def extreme_ratings():
     cursor.close()
     connection.close()
     return jsonify(data)
+
+# Fetch rating distribution for a genre
+@app.route('/api/genre-ratings')
+def get_genre_ratings():
+    """ Get rating distribution for a specific genre """
+    genre = request.args.get('genre')
+    
+    if not genre:
+        return jsonify({"error": "Genre parameter is required"}), 400
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute("""
+            SELECT 
+                r.rating, 
+                COUNT(*) AS frequency
+            FROM genres g
+            JOIN movie_genres mg ON g.genreId = mg.genreId
+            JOIN movies m ON mg.movieId = m.movieId
+            JOIN ratings r ON r.movieId = m.movieId
+            WHERE g.genre = %s
+            GROUP BY r.rating
+            ORDER BY r.rating ASC;
+        """, (genre,))
+        
+        data = cursor.fetchall()
+        return jsonify(data)
+        
+    except Exception as e:
+        print("Database error:", str(e))
+        return jsonify({"error": "Database error"}), 500
+        
+    finally:
+        cursor.close()
+        connection.close()
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)

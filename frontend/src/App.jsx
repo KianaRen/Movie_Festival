@@ -10,6 +10,7 @@ import NavBar from './components/NavBar'
 import {Routes, Route} from 'react-router-dom'
 import BreadCrumbs from './components/BreadCrumbs'
 import MovieDetail from './pages/MovieDetail'
+import GenreRatings from './pages/GenreRatings'
 
 
 
@@ -26,6 +27,7 @@ function App() {
           <Route path="/mylist" element = {<MyList />}/>
           <Route path="/analysis" element = {<Analysis />}/>
           <Route path="/reports" element = {<Reports />}/>
+          <Route path="/genre-ratings" element={<GenreRatings />} />
           <Route path="/dashboard/:id" element={<MovieDetail />}></Route>
         </Routes>
       </main>
