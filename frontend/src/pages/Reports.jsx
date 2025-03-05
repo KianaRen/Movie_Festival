@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS } from 'chart.js/auto';
 import { Link } from 'react-router-dom';
+import { plugins } from 'chart.js';
 
 function Reports() {
   const [moviesPerGenre, setMoviesPerGenre] = useState(null);
@@ -134,17 +135,22 @@ function Reports() {
 
         {/* Extreme Ratings */}
         <div style={{ backgroundColor: 'rgba(245, 243, 243, 0.97)', padding: '30px', borderRadius: '8px',  height: '400px', position: 'relative' }}>
-          <h3 style={{ color: 'black' }}>Percentage of Extreme Ratings (0.5 or 5 stars)</h3>
+          <h3 style={{ color: 'black'}}>Genre Rating Polarisaiton</h3>
+          <p style={{ color: '#666', fontSize: '0.85em'}}>
+            Minimum % of low (≤1) and high (≥4.5) ratings
+          </p>
           {extremeRatings && (
             <Bar
               data={createChartData(
                 extremeRatings.map(item => item.genre),
-                extremeRatings.map(item => item.percentage),
+                extremeRatings.map(item => item.polarization_percentage),
                 'Percentage %',
                 'rgba(153, 102, 255, 0.5)'
               )}
               options={{
                 ...chartOptions,
+                plugins: { legend:{display:false} },
+                layout: { padding:{bottom:20} },
                 scales: {
                   y: {
                     beginAtZero: true,
