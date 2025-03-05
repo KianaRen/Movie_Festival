@@ -114,7 +114,7 @@ function Home(){
                 <div className="search-bar">
                     <input 
                         type="text" 
-                        placeholder="Search for movies..." 
+                        placeholder="Search for movies, actors, directors..." 
                         className="search-input"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -183,7 +183,6 @@ function Home(){
                         ))}
                     </select>
 
-                    {/* Display Selected Tags with "X" Button */}
                     <div className="selected-tags">
                         {selectedTags.map(tag => (
                             <span key={tag} className="selected-tag">

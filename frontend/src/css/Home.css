@@ -5,7 +5,7 @@
 }
 
 .search-form {
-  max-width: 700px;
+  max-width: 900px;
   margin: 0 auto 2rem;
   display: flex;
   flex-direction: column; /* Stack elements vertically */
@@ -16,6 +16,7 @@
 
 /* Group the search input and button in a row */
 .search-bar {
+  max-width: 700px;
   display: flex;
   gap: 10px; 
   width: 100%;
