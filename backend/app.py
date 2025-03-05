@@ -81,6 +81,61 @@ def get_user_lists():
 
     return jsonify(lists_with_movies)
 
+# Edit the title and description of a list
+@app.route('/api/mylist/edit/<int:list_id>', methods=['PUT'])
+def edit_list(list_id):
+    user_id = get_authenticated_user()
+    if not user_id:
+        return jsonify({"error": "User not authenticated"}), 403
+    
+    data = request.json
+    new_title = data.get("listTitle")
+    new_description = data.get("listDescription")
+
+    if not new_title or not new_description:
+        return jsonify({"error": "Missing title or description"}), 400
+
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "UPDATE lists SET listTitle = %s, listDescription = %s WHERE listId = %s AND plannerUserId = %s",
+            (new_title, new_description, list_id, user_id)
+        )
+        connection.commit()
+        return jsonify({"message": "List updated successfully"}), 200
+
+    except Exception as e:
+        connection.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        connection.close()
+
+
+# Delete a list
+@app.route('/api/mylist/delete/<int:list_id>', methods=['DELETE'])
+def delete_list(list_id):
+    user_id = get_authenticated_user()
+    if not user_id:
+        return jsonify({"error": "User not authenticated"}), 403
+
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute("DELETE FROM lists WHERE listId = %s AND plannerUserId = %s", (list_id, user_id))
+        connection.commit()
+        return jsonify({"message": "List deleted successfully"}), 200
+
+    except Exception as e:
+        connection.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        connection.close()
+
 
 # Add a movie to the user's list
 @app.route('/api/mylist/add', methods=['POST'])
@@ -156,6 +211,7 @@ def remove_movie_from_list():
         cursor.close()
         connection.close()
 
+
 #  Fetch movies in the user's list, grouped by genre
 @app.route('/api/mylist/grouped', methods=['GET'])
 def get_user_list_grouped_by_genre():
@@ -172,7 +228,7 @@ def get_user_list_grouped_by_genre():
                 l.listId,
                 l.listTitle,
                 l.listDescription,
-                COALESCE(g.genre, 'No Genre') AS genre, 
+                g.genre, 
                 m.movieId, 
                 m.title, 
                 m.releaseYear, 
@@ -187,27 +243,31 @@ def get_user_list_grouped_by_genre():
             ORDER BY l.listTitle, g.genre, m.title;
         """, (user_id,))
 
-        
         movies = cursor.fetchall()
 
         # Group movies by list and genre
         user_lists = {}
+
         for movie in movies:
             list_id = movie.pop("listId")
             list_title = movie.pop("listTitle")
             list_desc = movie.pop("listDescription")
             genre = movie.pop("genre")
 
+            # Initialize list if not exists
             if list_id not in user_lists:
                 user_lists[list_id] = {
                     "listTitle": list_title,
                     "listDescription": list_desc,
                     "moviesByGenre": {}
                 }
-            if genre not in user_lists[list_id]["moviesByGenre"]:
-                user_lists[list_id]["moviesByGenre"][genre] = []
 
-            user_lists[list_id]["moviesByGenre"][genre].append(movie)
+            # Only add movies if they are not null
+            if movie["movieId"]:
+                if genre not in user_lists[list_id]["moviesByGenre"]:
+                    user_lists[list_id]["moviesByGenre"][genre] = []
+
+                user_lists[list_id]["moviesByGenre"][genre].append(movie)
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
