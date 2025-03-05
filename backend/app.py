@@ -534,6 +534,46 @@ def get_genre_ratings():
         cursor.close()
         connection.close()
 
+# Fetch Viewer Personality
+@app.route('/api/viewer-personality')
+def viewer_personality():
+    genre = request.args.get('genre')
+    
+    if not genre:
+        return jsonify({"error": "Genre parameter is required"}), 400
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute("""
+            SELECT 
+                g.genre,
+                ROUND(AVG(up.openness), 2) AS avg_openness,
+                ROUND(AVG(up.agreeableness), 2) AS avg_agreeableness,
+                ROUND(AVG(up.emotional_stability), 2) AS avg_emotional_stability,
+                ROUND(AVG(up.conscientiousness), 2) AS avg_conscientiousness,
+                ROUND(AVG(up.extraversion), 2) AS avg_extraversion
+            FROM genres g
+            JOIN movie_genres mg ON g.genreId = mg.genreId
+            JOIN movies m ON mg.movieId = m.movieId
+            JOIN personality_rating pr ON pr.movieId = m.movieId
+            JOIN user_personality up ON up.useri = pr.useri
+            WHERE g.genre = %s
+            GROUP BY g.genre;
+        """, (genre,))
+        
+        data = cursor.fetchall()
+        return jsonify(data[0] if data else {})
+        
+    except Exception as e:
+        print("Database error:", str(e))
+        return jsonify({"error": "Database error"}), 500
+        
+    finally:
+        cursor.close()
+        connection.close()
+
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)
 
