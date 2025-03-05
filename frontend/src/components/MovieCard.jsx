@@ -12,7 +12,11 @@ const MovieCard = ({ movie }) => {
         const fetchLists = async () => {
             try {
                 const response = await axios.get("/api/mylist/grouped");
-                setLists(Object.keys(response.data));
+                const listData = Object.entries(response.data).map(([listId, list]) => ({
+                    listId, 
+                    listTitle: list.listTitle
+                }));
+                setLists(listData); // Store full list objects
             } catch (error) {
                 console.error("Error fetching lists:", error);
             }
@@ -58,9 +62,9 @@ const MovieCard = ({ movie }) => {
                 <div className="movie-actions" onClick={(e) => e.stopPropagation()}>
                     <select className="list-select" onChange={(e) => setSelectedListId(e.target.value)} onClick={handleDropdownClick}>
                         <option value="">Select a list</option>
-                        {lists.map((listId) => (
-                            <option key={listId} value={listId}>
-                                List {listId}
+                        {lists.map((list) => (
+                            <option key={list.listId} value={list.listId}>
+                                {list.listTitle}
                             </option>
                         ))}
                     </select>
