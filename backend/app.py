@@ -475,7 +475,7 @@ def avg_rating():
     connection.close()
     return jsonify(data)
 
-# For Popularity Report (Plot 4: Extreme rating %)
+# For Popularity Report (Plot 4: Minimum of the Two Extreme Percentages)
 @app.route('/api/stats/extreme-ratings')
 def extreme_ratings():
     connection = get_db_connection()
@@ -484,7 +484,12 @@ def extreme_ratings():
     cursor.execute("""
         SELECT 
             g.genre, 
-            ROUND(COUNT(CASE WHEN r.rating = 1 OR r.rating = 5 THEN 1 END) * 100.0 / COUNT(*), 1) AS percentage
+            ROUND(
+                LEAST(
+                    COUNT(CASE WHEN r.rating <= 1 THEN 1 END) * 100.0 / COUNT(*), 
+                    COUNT(CASE WHEN r.rating >= 4.5 THEN 1 END) * 100.0 / COUNT(*)
+                ), 
+            1) AS polarization_percentage
         FROM genres g
         JOIN movie_genres mg ON g.genreId = mg.genreId
         JOIN movies m ON mg.movieId = m.movieId
