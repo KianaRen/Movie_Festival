@@ -549,11 +549,11 @@ def viewer_personality():
         cursor.execute("""
             SELECT 
                 g.genre,
-                ROUND(AVG(up.openness), 2) AS avg_openness,
-                ROUND(AVG(up.agreeableness), 2) AS avg_agreeableness,
-                ROUND(AVG(up.emotional_stability), 2) AS avg_emotional_stability,
-                ROUND(AVG(up.conscientiousness), 2) AS avg_conscientiousness,
-                ROUND(AVG(up.extraversion), 2) AS avg_extraversion
+                ROUND(AVG(up.openness), 3) AS avg_openness,
+                ROUND(AVG(up.agreeableness), 3) AS avg_agreeableness,
+                ROUND(AVG(up.emotional_stability), 3) AS avg_emotional_stability,
+                ROUND(AVG(up.conscientiousness), 3) AS avg_conscientiousness,
+                ROUND(AVG(up.extraversion), 3) AS avg_extraversion
             FROM genres g
             JOIN movie_genres mg ON g.genreId = mg.genreId
             JOIN movies m ON mg.movieId = m.movieId

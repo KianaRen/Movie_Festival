@@ -69,9 +69,10 @@ function ViewerPersonality() {
     scales: {
       r: {
         angleLines: { display: false },
-        suggestedMin: 0,
-        suggestedMax: 5,
-        ticks: { stepSize: 1 }
+        suggestedMin: 3.5,  // Axis range
+        suggestedMax: 4.5,  // Axis max range
+        ticks: { stepSize: 0.2 , font: {size: 12} , backdropColor: 'transparent', color: '#333' },  //Axis scale
+        pointLabels: { font: {size:14}, color:'#333' }
       }
     },
     plugins: {
@@ -119,17 +120,57 @@ function ViewerPersonality() {
                 ...base,
                 minWidth: '300px',
                 border: '1px solid #ddd',
-                boxShadow: 'none'
+                backgroundColor: 'rgba(40, 40, 40, 0.97)',
+                color: 'white',
+                boxShadow: 'none',
+                '&:hover': {
+                  borderColor: '#3d3d3d'
+                }
               }),
-              multiValue: (base) => ({
+              menu: (base) => ({
                 ...base,
-                backgroundColor: '#e8f4ff',
-                borderRadius: '4px'
+                backgroundColor: 'rgba(40, 40, 40, 0.97)',
+                border: '1px solid #2d2d2d'
               }),
               option: (base, state) => ({
                 ...base,
-                backgroundColor: state.isSelected ? '#e8f4ff' : 'white',
-                color: '#333'
+                backgroundColor: state.isSelected 
+                  ? 'rgba(116, 170, 250, 0.5)' 
+                  : state.isFocused 
+                  ? 'rgba(100, 100, 100, 0.2)' 
+                  : 'transparent',
+                color: 'white',
+                '&:active': {
+                  backgroundColor: 'rgba(116, 170, 250, 0.3)'
+                }
+              }),
+              multiValue: (base) => ({
+                ...base,
+                backgroundColor: 'rgba(116, 170, 250, 0.3)',
+                borderRadius: '4px'
+              }),
+              multiValueLabel: (base) => ({
+                ...base,
+                color: 'white'
+              }),
+              multiValueRemove: (base) => ({
+                ...base,
+                color: 'white',
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                }
+              }),
+              placeholder: (base) => ({
+                ...base,
+                color: '#888'
+              }),
+              singleValue: (base) => ({
+                ...base,
+                color: 'white'
+              }),
+              input: (base) => ({
+                ...base,
+                color: 'white'
               })
             }}
             closeMenuOnSelect={false}
