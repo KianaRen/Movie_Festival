@@ -1,18 +1,18 @@
-import { Link } from 'react-router-dom'
 import { useState, useEffect } from "react";
-
-import '../css/MovieCard.css'
+import { useNavigate } from "react-router-dom"; // Import for navigation
 import axios from "axios";
+import "../css/MovieCard.css";
 
 const MovieCard = ({ movie }) => {
     const [lists, setLists] = useState([]);
     const [selectedListId, setSelectedListId] = useState("");
+    const navigate = useNavigate(); // React Router navigation function
 
     useEffect(() => {
         const fetchLists = async () => {
             try {
                 const response = await axios.get("/api/mylist/grouped");
-                setLists(Object.keys(response.data)); // Get list IDs
+                setLists(Object.keys(response.data));
             } catch (error) {
                 console.error("Error fetching lists:", error);
             }
@@ -20,7 +20,8 @@ const MovieCard = ({ movie }) => {
         fetchLists();
     }, []);
 
-    const onListBtnClick = async () => {
+    const onListBtnClick = async (e) => {
+        e.stopPropagation(); // Prevent clicking the movie poster
         if (!selectedListId) {
             alert("Please select a list first!");
             return;
@@ -42,37 +43,38 @@ const MovieCard = ({ movie }) => {
     };
 
     const handleDropdownClick = (e) => {
-        e.stopPropagation(); 
+        e.stopPropagation(); // Prevent clicking the movie poster
     };
 
-    return <div className="movie-card">
-        <Link to={`/dashboard/${movie.movieId}`} className="movie-link">
-        <div className="movie-poster">
-            <img src = {movie.posterURL} alt = {movie.title}/>
-            <div className="movie-overlay">
-            <select
-                    className="list-select"
-                    onChange={(e) => setSelectedListId(e.target.value)}
-                    onClick={handleDropdownClick} // Prevent event propagation
-                >
-                    <option value="">Select a list</option>
-                    {lists.map((listId) => (
-                        <option key={listId} value={listId}>
-                            List {listId}
-                        </option>
-                    ))}
-                </select>
-                <button className="list-btn" onClick={onListBtnClick}>ADD TO LIST</button>
+    const goToMovieDetail = () => {
+        navigate(`/dashboard/${movie.movieId}`); // Navigate to movie detail page
+    };
+
+    return (
+        <div className="movie-card" onClick={goToMovieDetail}>
+            <div className="movie-poster">
+                <img src={movie.posterURL} alt={movie.title} />
+                {/* Movie actions (dropdown and button) */}
+                <div className="movie-actions" onClick={(e) => e.stopPropagation()}>
+                    <select className="list-select" onChange={(e) => setSelectedListId(e.target.value)} onClick={handleDropdownClick}>
+                        <option value="">Select a list</option>
+                        {lists.map((listId) => (
+                            <option key={listId} value={listId}>
+                                List {listId}
+                            </option>
+                        ))}
+                    </select>
+                    <button className="list-btn" onClick={onListBtnClick}>ADD TO LIST</button>
+                </div>
+            </div>
+
+            <div className="movie-info">
+                <h3>{movie.title}</h3>
+                <p>{movie.releaseYear}</p>
+                <p>{movie.criticScore}</p>
             </div>
         </div>
-        <div className="movie-info">
-            <h3>{movie.title}</h3>
-            <p>{movie.releaseYear}</p>
-            <p>{movie.criticScore}</p>
-        </div>
-        </Link>
-    </div>
+    );
+};
 
-}
-
-export default MovieCard
+export default MovieCard;
