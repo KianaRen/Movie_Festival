@@ -639,6 +639,59 @@ def viewer_personality():
         cursor.close()
         connection.close()
 
+@app.route('/api/rating-correlation')
+def rating_correlation():
+    genreA = request.args.get('genreA')
+    genreB = request.args.get('genreB')
+    
+    if not genreA or not genreB:
+        return jsonify({"error": "Both genres required"}), 400
+
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute("""
+            WITH genre_ratings AS (
+                SELECT 
+                    r.userId,
+                    AVG(CASE WHEN g.genre = %s THEN r.rating END) AS ga,
+                    AVG(CASE WHEN g.genre = %s THEN r.rating END) AS gb
+                FROM ratings r
+                JOIN movies m ON r.movieId = m.movieId
+                JOIN movie_genres mg ON m.movieId = mg.movieId
+                JOIN genres g ON mg.genreId = g.genreId
+                WHERE g.genre IN (%s, %s)
+                GROUP BY r.userId
+                HAVING COUNT(DISTINCT g.genre) = 2
+            )
+            SELECT 
+                SUM(CASE WHEN ga < 4 AND gb < 4 THEN 1 ELSE 0 END),
+                SUM(CASE WHEN ga < 4 AND gb >= 4 THEN 1 ELSE 0 END),
+                SUM(CASE WHEN ga >= 4 AND gb < 4 THEN 1 ELSE 0 END),
+                SUM(CASE WHEN ga >= 4 AND gb >= 4 THEN 1 ELSE 0 END),
+                COUNT(*)
+            FROM genre_ratings;
+        """, (genreA, genreB, genreA, genreB))
+        
+        result = cursor.fetchone()
+        
+        return jsonify({
+            "lowBoth": result[0],
+            "lowAHighB": result[1],
+            "highALowB": result[2],
+            "highBoth": result[3],
+            "totalUsers": result[4]
+        })
+        
+    except Exception as e:
+        print("Database error:", str(e))
+        return jsonify({"error": "Database error"}), 500
+    finally:
+        cursor.close()
+        connection.close()
+
+
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)
 
