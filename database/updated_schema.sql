@@ -78,7 +78,7 @@ CREATE TABLE movie_genres (
 
 -- Planner-user Table (For authentication)
 CREATE TABLE planner_user (
-    planner_userId INT PRIMARY KEY AUTO_INCREMENT,
+    plannerUserId INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(30) UNIQUE,
     password VARCHAR(255) NOT NULL,
     passwordSalt BINARY(16) NOT NULL
@@ -88,8 +88,8 @@ CREATE TABLE planner_user (
 CREATE TABLE lists (
     listId INT PRIMARY KEY AUTO_INCREMENT,
     listTitle VARCHAR(255),
-    planner_userId INT,
-    FOREIGN KEY (planner_userId) REFERENCES planner_user(planner_userId) ON DELETE CASCADE
+    plannerUserId INT,
+    FOREIGN KEY (plannerUserId) REFERENCES planner_user(plannerUserId) ON DELETE CASCADE
 );
 
 -- Movie-Lists Relationship Table (Many-to-Many)
