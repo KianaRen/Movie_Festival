@@ -691,6 +691,39 @@ def rating_correlation():
         cursor.close()
         connection.close()
 
+# Fetch popular tags (used ≥20 times, not genre names) 
+@app.route('/api/popular-tags', methods=['GET'])
+def get_popular_tags():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    min_count = 20
+
+    try:
+        cursor.execute("""
+            WITH PopularTags AS (
+                SELECT mt.tagId, t.tag
+                FROM movie_tags mt
+                JOIN tags t ON mt.tagId = t.tagId
+                GROUP BY mt.tagId
+                HAVING COUNT(*) >= %s
+            )
+            SELECT pt.tagId, pt.tag
+            FROM PopularTags pt
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM genres g
+                WHERE LOWER(pt.tag) = LOWER(g.genre)
+            )
+            ORDER BY pt.tag;
+        """, (min_count,))
+        tags = cursor.fetchall()
+        return jsonify(tags), 200
+    except Exception as e:
+        print("Database error:", str(e))
+        return jsonify({"error": "Database error"}), 500
+    finally:
+        cursor.close()
+        connection.close()
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)
