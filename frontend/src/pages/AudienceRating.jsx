@@ -22,9 +22,9 @@ function AudienceRating() {
   useEffect(() => {
     const fetchGenres = async () => {
       try {
-        const response = await fetch('/api/genres');
+        const response = await fetch('/api/genres-withId');
         const data = await response.json();
-        setGenreOptions(data.genres.map(g => ({ value: g, label: g })));
+        setGenreOptions(data.map(genre => ({ value: genre.genreId, label: genre.genre })));
       } catch (error) {
         console.error('Error fetching genres:', error);
       }
@@ -46,7 +46,7 @@ function AudienceRating() {
           }
 
       try {
-        const response = await fetch(`/api/rating-correlation?genreA=${selectedGenreA.value}&genreB=${selectedGenreB.value}`);
+        const response = await fetch(`/api/rating-correlation?genreA=${selectedGenreA.label}&genreB=${selectedGenreB.label}`);
         const apiData = await response.json();
 
         const highBoth = parseNumber(apiData.highBoth);

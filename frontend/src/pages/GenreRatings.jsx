@@ -7,14 +7,15 @@ function GenreRatings() {
   const [selectedGenre, setSelectedGenre] = useState('');
   const [genres, setGenres] = useState([]);
   const [ratingData, setRatingData] = useState(null);
+  const selectedGenreName = genres.find((genre) => genre.genreId.toString() === selectedGenre)?.genre || 'Selected Genre';
 
   // Fetch list of genres
   useEffect(() => {
     const fetchGenres = async () => {
       try {
-        const response = await fetch('/api/genres');
+        const response = await fetch('/api/genres-withId');
         const data = await response.json();
-        setGenres(data.genres);
+        setGenres(data);
       } catch (error) {
         console.error('Error fetching genres:', error);
       }
@@ -28,7 +29,7 @@ function GenreRatings() {
       if (!selectedGenre) return;
 
       try {
-        const response = await fetch(`/api/genre-ratings?genre=${encodeURIComponent(selectedGenre)}`);
+        const response = await fetch(`/api/genre-ratings?genreId=${encodeURIComponent(selectedGenre)}`);
         const data = await response.json();
         setRatingData(data);
       } catch (error) {
@@ -139,7 +140,7 @@ function GenreRatings() {
           >
             <option value="">Select a Genre</option>
             {genres.map(genre => (
-              <option key={genre} value={genre}>{genre}</option>
+              <option key={genre.genreId} value={genre.genreId}>{genre.genre}</option>
             ))}
           </select>
         </div>
@@ -154,7 +155,7 @@ function GenreRatings() {
             position: 'relative'
           }}>
             <h3 style={{ textAlign: 'center', marginBottom: '20px' , color: '#333'}}>
-              Rating Distribution for {selectedGenre}
+              Rating Distribution for {selectedGenreName}
             </h3>
             <Bar
               data={createChartData(ratingData)}

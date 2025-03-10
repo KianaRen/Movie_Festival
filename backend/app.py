@@ -1,6 +1,11 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from database.db import get_db_connection  # Import database connection
+import json
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import MultiLabelBinarizer
+import statsmodels.api as sm
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS to allow frontend requests
@@ -465,6 +470,19 @@ def get_genres():
 
     return jsonify({"genres": genres})
 
+@app.route('/api/genres-withId', methods=['GET'])
+def get_genres_withId():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute("SELECT genreId, genre FROM genres WHERE genreId != 20;")
+    genres = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    return jsonify(genres)
+
 @app.route('/api/tags', methods=['GET'])
 def get_tags():
     connection = get_db_connection()
@@ -566,9 +584,9 @@ def extreme_ratings():
 @app.route('/api/genre-ratings')
 def get_genre_ratings():
     """ Get rating distribution for a specific genre """
-    genre = request.args.get('genre')
+    genreId = request.args.get('genreId')
     
-    if not genre:
+    if not genreId or not genreId.isdigit():
         return jsonify({"error": "Genre parameter is required"}), 400
 
     connection = get_db_connection()
@@ -583,10 +601,10 @@ def get_genre_ratings():
             JOIN movie_genres mg ON g.genreId = mg.genreId
             JOIN movies m ON mg.movieId = m.movieId
             JOIN ratings r ON r.movieId = m.movieId
-            WHERE g.genre = %s
+            WHERE g.genreId = %s
             GROUP BY r.rating
             ORDER BY r.rating ASC;
-        """, (genre,))
+        """, (int(genreId),))
         
         data = cursor.fetchall()
         return jsonify(data)
@@ -691,7 +709,7 @@ def rating_correlation():
         cursor.close()
         connection.close()
 
-# Fetch popular tags (used ≥20 times, not genre names) 
+# Fetch popular tags (used ≥20 times, not genre names, not used in conjunction with a non-popular tag) 
 @app.route('/api/popular-tags', methods=['GET'])
 def get_popular_tags():
     connection = get_db_connection()
@@ -706,6 +724,16 @@ def get_popular_tags():
                 JOIN tags t ON mt.tagId = t.tagId
                 GROUP BY mt.tagId
                 HAVING COUNT(*) >= %s
+            ),
+            ValidMovies AS (
+                SELECT DISTINCT mt.movieId
+                FROM movie_tags mt
+                WHERE NOT EXISTS (
+                    SELECT 1 
+                    FROM movie_tags mt2
+                    WHERE mt2.movieId = mt.movieId
+                    AND mt2.tagId NOT IN (SELECT tagId FROM PopularTags)
+                )
             )
             SELECT pt.tagId, pt.tag
             FROM PopularTags pt
@@ -713,6 +741,11 @@ def get_popular_tags():
                 SELECT 1
                 FROM genres g
                 WHERE LOWER(pt.tag) = LOWER(g.genre)
+            )
+            AND pt.tagId IN (
+                SELECT DISTINCT mt.tagId
+                FROM movie_tags mt
+                JOIN ValidMovies vm ON mt.movieId = vm.movieId
             )
             ORDER BY pt.tag;
         """, (min_count,))
@@ -724,6 +757,180 @@ def get_popular_tags():
     finally:
         cursor.close()
         connection.close()
+
+# Fetch training data for the model
+@app.route('/api/training-data', methods=['GET'])
+def get_training_data():
+    """Endpoint to fetch training data"""
+    connection = None
+    cursor = None
+    
+    try:
+        # Get valid IDs from other endpoints
+        genres_response = get_genres_withId()
+        valid_genre_ids = [g['genreId'] for g in genres_response.get_json()]
+        
+        tags_response, _ = get_popular_tags()
+        popular_tag_ids = [t['tagId'] for t in tags_response.get_json()]
+
+        # Generate SQL components
+        valid_genres_cte = generate_ids_cte(valid_genre_ids, "valid_genres")
+        popular_tags_cte = generate_ids_cte(popular_tag_ids, "popular_tags")
+
+        # Build full SQL query
+        query = f"""
+        WITH
+            {valid_genres_cte},
+            {popular_tags_cte},
+            movie_valid_genres AS (
+                SELECT mg.movieId, JSON_ARRAYAGG(mg.genreId) AS genres
+                FROM (
+                    SELECT DISTINCT movieId, genreId 
+                    FROM movie_genres 
+                    WHERE genreId IN (SELECT * FROM valid_genres)
+                ) mg
+                GROUP BY mg.movieId
+            ),
+            movie_clean_tags AS (
+                SELECT mt.movieId, 
+                       JSON_ARRAYAGG(mt.tagId) AS tags
+                FROM movie_tags mt
+                WHERE mt.tagId IN (SELECT * FROM popular_tags)
+                GROUP BY mt.movieId
+            ),
+            movie_ratings AS (
+                SELECT r.movieId, 
+                       ROUND(AVG(r.rating), 4) AS avg_rating,
+                       COUNT(r.rating) AS rating_count
+                FROM ratings r
+                GROUP BY r.movieId
+            )
+        SELECT
+            m.movieId, mr.avg_rating, mr.rating_count,
+            COALESCE(g.genres, JSON_ARRAY()) AS genres,
+            COALESCE(t.tags, JSON_ARRAY()) AS tags
+        FROM movies m
+        JOIN movie_ratings mr ON m.movieId = mr.movieId
+        LEFT JOIN movie_valid_genres g ON m.movieId = g.movieId
+        LEFT JOIN movie_clean_tags t ON m.movieId = t.movieId
+        WHERE
+            NOT EXISTS (
+                SELECT 1 FROM movie_genres mg
+                WHERE mg.movieId = m.movieId
+                AND mg.genreId NOT IN (SELECT * FROM valid_genres)
+            )
+            AND (
+            JSON_LENGTH(g.genres) > 0 OR JSON_LENGTH(t.tags) > 0
+            )
+        ORDER BY mr.avg_rating DESC;"""
+
+        # Execute query
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(query)
+        results = cursor.fetchall()
+
+        # Convert JSON strings to Python objects
+        for row in results:
+            row['genres'] = json.loads(row['genres'])
+            row['tags'] = json.loads(row['tags'])
+
+        return jsonify({
+            'success': True,
+            'count': len(results),
+            'data': results
+        }), 200
+
+    except Exception as e:
+        app.logger.error(f"Database error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Failed to fetch training data',
+            'message': str(e)
+        }), 500
+
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def generate_ids_cte(id_list, cte_name):
+    """Helper to generate CTE for ID lists"""
+    if id_list:
+        selects = " UNION ALL ".join([f"SELECT {id}" for id in id_list])
+        return f"{cte_name} AS ({selects})"
+    return f"{cte_name} AS (SELECT NULL LIMIT 0)"
+
+# Train a linear regression
+@app.route('/api/trainLM', methods=['GET'])
+def trainLM():
+    """Endpoint for the linear regression summary"""
+    response, status_code = get_training_data()  # Unpack the tuple
+
+    # Check for errors
+    if status_code != 200:
+        return response  # Return the original error response
+
+    # Extract JSON data from the Response object
+    training_data = response.get_json()
+
+    # Access the "data" list from the JSON
+    data_list = training_data["data"]
+
+    # Populate lists
+    movie_ids = [movie["movieId"] for movie in data_list]
+    average_ratings = [movie["avg_rating"] for movie in data_list]
+    genre_ids = [movie["genres"] for movie in data_list]
+    tag_ids = [movie["tags"] for movie in data_list]
+
+    df = pd.DataFrame({"movieId": movie_ids,
+        "average_rating": average_ratings,
+        "genreId": genre_ids,
+        "tagId": tag_ids})
+
+    # Initialize Binarizers
+    mlb_genre = MultiLabelBinarizer()
+    mlb_tag = MultiLabelBinarizer()
+
+    # One-hot encode genres and tags
+    genre_features = mlb_genre.fit_transform(df['genreId'])
+    tag_features = mlb_tag.fit_transform(df['tagId'])
+    
+    # Get feature names for genres and tags
+    genre_names = mlb_genre.classes_.tolist()
+    tag_names = mlb_tag.classes_.tolist()
+    all_feature_names = genre_names + tag_names
+
+    # Combine features into a named DataFrame
+    X = np.hstack([genre_features, tag_features])
+    X_df = pd.DataFrame(X, columns=all_feature_names)
+    X_sm = sm.add_constant(X_df, prepend=True, has_constant="add")  # Add "const"
+
+    y = df['average_rating'].values
+
+    # Fit OLS model
+    model = sm.OLS(y, X_sm)
+    results = model.fit()
+    
+    # Extract key statistics about the model
+    response_data = {
+        "success": True,
+        "rsquared": results.rsquared,
+        "rsquared_adj": results.rsquared_adj,
+        "coefficients": {
+            "names": results.params.index.tolist(),
+            "values": results.params.values.tolist(),
+            "pvalues": results.pvalues.tolist()
+        },
+        "f_statistic": {
+            "fvalue": results.fvalue,
+            "f_pvalue": results.f_pvalue
+        }
+    }
+
+    return jsonify(response_data), 200
+
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)
