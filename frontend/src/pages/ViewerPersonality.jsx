@@ -13,9 +13,9 @@ function ViewerPersonality() {
   useEffect(() => {
     const fetchGenres = async () => {
       try {
-        const response = await fetch('/api/genres');
+        const response = await fetch('/api/genres-withId');
         const data = await response.json();
-        setGenres(data.genres.map(genre => ({ value: genre, label: genre })));
+        setGenres(data.map(genre => ({ value: genre.genreId, label: genre.genre })));
       } catch (error) {
         console.error('Error fetching genres:', error);
       }
@@ -31,7 +31,7 @@ function ViewerPersonality() {
       try {
         const responses = await Promise.all(
           selectedGenres.map(genre => 
-            fetch(`/api/viewer-personality?genre=${encodeURIComponent(genre.value)}`)
+            fetch(`/api/viewer-personality?genre=${encodeURIComponent(genre.label)}`)
           )
         );
         

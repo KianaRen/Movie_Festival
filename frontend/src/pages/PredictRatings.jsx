@@ -7,14 +7,16 @@ function PredictRatings() {
   const [selectedOptionB, setSelectedOptionB] = useState(null);
   const [genres, setGenres] = useState([]);
   const [tags, setTags] = useState([]);
+  const [coefficients, setCoefficients] = useState({});
+  const [prediction, setPrediction] = useState(null);
 
   // Fetch genre list
   useEffect(() => {
     const fetchGenres = async () => {
       try {
-        const response = await fetch('/api/genres');
+        const response = await fetch('/api/genres-withId');
         const data = await response.json();
-        setGenres(data.genres.map(genre => ({ value: genre, label: genre })));
+        setGenres(data.map(genre => ({ value: genre.genreId, label: genre.genre })));
       } catch (error) {
         console.error('Error fetching genres:', error);
       }
@@ -28,10 +30,7 @@ function PredictRatings() {
       try {
         const response = await fetch('/api/popular-tags');
         const data = await response.json();
-        setTags(data.map(tag => ({ 
-          value: tag.tagId, 
-          label: tag.tag 
-        })));
+        setTags(data.map(tag => ({ value: tag.tagId, label: tag.tag })));
       } catch (error) {
         console.error('Error fetching tags:', error);
       }
@@ -39,6 +38,53 @@ function PredictRatings() {
     fetchTags();
   }, []);
 
+  // Fetch coefficients when component mounts
+  useEffect(() => {
+    const fetchCoefficients = async () => {
+      try {
+        const response = await fetch('/api/trainLM');
+        if (!response.ok) throw new Error('Failed to fetch coefficients');
+        const data = await response.json();
+        if (data.success) {
+          const coeffMap = {};
+          data.coefficients.names.forEach((name, index) => {
+            coeffMap[name.toString()] = data.coefficients.values[index];
+          });
+          setCoefficients(coeffMap);
+        }
+      } catch (error) {
+        console.error('Error fetching coefficients:', error);
+      }
+    };
+    fetchCoefficients();
+  }, []);
+
+  // Calculate prediction when selections or coefficients change
+  useEffect(() => {
+    if (Object.keys(coefficients).length === 0) return;
+
+    // Return null if nothing is selected
+    const hasSelection = selectedOptionA.length > 0 || (selectedOptionB && selectedOptionB.length > 0);
+    if (!hasSelection) {
+      setPrediction(null);
+      return;
+    }
+
+    const constTerm = coefficients['const'] || 0;
+    const selectedGenres = selectedOptionA.map(opt => opt.value);
+    const selectedTags = selectedOptionB ? selectedOptionB.map(opt => opt.value) : [];
+
+    const genreSum = selectedGenres.reduce((sum, id) => 
+      sum + (coefficients[id.toString()] || 0), 0);
+    const tagSum = selectedTags.reduce((sum, id) => 
+      sum + (coefficients[id.toString()] || 0), 0);
+
+    // Calculate raw prediction and clamp between 0.5 and 5
+    const rawPrediction = constTerm + genreSum + tagSum;
+    const clampedPrediction = Math.max(0.5, Math.min(5, rawPrediction));
+
+    setPrediction(clampedPrediction);
+  }, [selectedOptionA, selectedOptionB, coefficients]);
 
   return (
     <div className="predict-ratings" style={{ padding: '30px' }}>
@@ -98,6 +144,21 @@ function PredictRatings() {
             closeMenuOnSelect={false}
           />
         </div>
+
+        {/* Prediction Display */}
+        {prediction !== null && (
+          <div style={{ 
+            textAlign: 'center', 
+            marginTop: '40px',
+            padding: '20px',
+            backgroundColor: 'rgba(40, 40, 40, 0.97)',
+            borderRadius: '8px'
+          }}>
+            <h3 style={{ margin: 0, color: 'white' }}>
+              Predicted Rating: {prediction.toFixed(2)}
+            </h3>
+            </div>
+        )}
       </div>
     </div>
   );
