@@ -657,6 +657,7 @@ def viewer_personality():
         cursor.close()
         connection.close()
 
+# Categorise users with their average ratings in two genres
 @app.route('/api/rating-correlation')
 def rating_correlation():
     genreA = request.args.get('genreA')
@@ -705,6 +706,67 @@ def rating_correlation():
     except Exception as e:
         print("Database error:", str(e))
         return jsonify({"error": "Database error"}), 500
+    finally:
+        cursor.close()
+        connection.close()
+
+# Get distinct user IDs from ratings table
+@app.route('/api/users-with-ratings', methods=['GET'])
+def get_users_with_ratings():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    
+    try:
+        cursor.execute("""
+            SELECT DISTINCT userId 
+            FROM ratings 
+            ORDER BY userId
+        """)
+        
+        users = cursor.fetchall()
+        return jsonify(users), 200
+        
+    except Exception as e:
+        print("Database error:", str(e))
+        return jsonify({"error": "Database error"}), 500
+        
+    finally:
+        cursor.close()
+        connection.close()
+
+@app.route('/api/user-genre-ratings')
+def get_user_genre_ratings():
+    """ Fetch rating history of a user """
+    userId = request.args.get('userId')
+    
+    if not userId or not userId.isdigit():
+        return jsonify({"error": "Valid userId parameter required"}), 400
+
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute("""
+            SELECT 
+                g.genre,
+                r.rating
+            FROM ratings r
+            JOIN movie_genres mg ON r.movieId = mg.movieId
+            JOIN genres g ON mg.genreId = g.genreId
+            WHERE r.userId = %s
+            ORDER BY g.genre ASC, r.rating DESC;
+        """, (int(userId),))
+        
+        data = cursor.fetchall()
+        return jsonify({
+            "userId": userId,
+            "ratings": data
+        })
+        
+    except Exception as e:
+        print("Database error:", str(e))
+        return jsonify({"error": "Database error"}), 500
+        
     finally:
         cursor.close()
         connection.close()

@@ -101,8 +101,14 @@ function AudienceRating() {
 
   return (
     <div className="audience-rating" style={{ padding: '30px' }}>
-      {/* Back Button */}
-      <div style={{ marginBottom: 30, textAlign: 'left' }}>
+      {/* Button Container */}
+      <div style={{ 
+        display: 'flex',
+        justifyContent: 'space-between',
+        marginBottom: 30,
+        width: '100%'
+      }}>
+        {/* Back Button (Left) */}
         <Link to="/analysis">
           <button style={{
             padding: '12px 24px',
@@ -118,6 +124,25 @@ function AudienceRating() {
             }
           }}>
             ← Back to Analysis
+          </button>
+        </Link>
+  
+        {/* View Ratings Button (Right) */}
+        <Link to="/user-ratings">
+          <button style={{
+            padding: '12px 24px',
+            backgroundColor: 'rgba(116, 170, 250, 0.97)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: 16,
+            transition: 'background-color 0.3s',
+            ':hover': {
+              backgroundColor: 'rgba(79, 148, 252, 0.97)'
+            }
+          }}>
+            View User Ratings →
           </button>
         </Link>
       </div>
