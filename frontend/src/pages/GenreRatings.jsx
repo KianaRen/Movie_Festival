@@ -135,12 +135,25 @@ function GenreRatings() {
               padding: '10px',
               fontSize: '16px',
               borderRadius: '4px',
-              minWidth: '200px'
+              minWidth: '200px',
+              backgroundColor: '#282828',
+              color: 'white', 
+              border: '1px solid #3d3d3d',
+              outline: 'none'
             }}
           >
             <option value="">Select a Genre</option>
             {genres.map(genre => (
-              <option key={genre.genreId} value={genre.genreId}>{genre.genre}</option>
+              <option 
+                key={genre.genreId}
+                value={genre.genreId}
+                style={{
+                  backgroundColor: '#282828',
+                  color: 'white'
+                }}
+              >
+                {genre.genre}
+                </option>
             ))}
           </select>
         </div>
