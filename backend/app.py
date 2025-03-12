@@ -5,6 +5,8 @@ import json
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MultiLabelBinarizer
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import cross_val_score
 import statsmodels.api as sm
 
 app = Flask(__name__)
@@ -971,6 +973,19 @@ def trainLM():
 
     y = df['average_rating'].values
 
+    lin_reg = LinearRegression()
+    # Calculate R-squared scores for each fold
+    cv_r2_scores = cross_val_score(lin_reg, X_df, y, cv=5, scoring='r2')
+    # Calculate MSE scores (negative) and convert to RMSE
+    cv_mse_scores = cross_val_score(lin_reg, X_df, y, cv=5, scoring='neg_mean_squared_error')
+    cv_rmse_scores = np.sqrt(-cv_mse_scores)
+
+    # Compute mean and standard deviation of metrics
+    cv_metrics = {
+        "mean_rmse": np.mean(cv_rmse_scores).item(),
+        "std_rmse": np.std(cv_rmse_scores).item()
+    }
+
     # Fit OLS model
     model = sm.OLS(y, X_sm)
     results = model.fit()
@@ -980,6 +995,7 @@ def trainLM():
         "success": True,
         "rsquared": results.rsquared,
         "rsquared_adj": results.rsquared_adj,
+        "cross_validation": cv_metrics,
         "coefficients": {
             "names": results.params.index.tolist(),
             "values": results.params.values.tolist(),
@@ -988,7 +1004,8 @@ def trainLM():
         "f_statistic": {
             "fvalue": results.fvalue,
             "f_pvalue": results.f_pvalue
-        }
+        },
+        "Summary:": results.summary().as_text()
     }
 
     return jsonify(response_data), 200
