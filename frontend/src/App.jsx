@@ -14,6 +14,7 @@ import GenreRatings from './pages/GenreRatings'
 import AudienceRating from './pages/AudienceRating'
 import PredictRatings from './pages/PredictRatings'
 import ViewerPersonality from './pages/ViewerPersonality'
+import UserRatings from './pages/UserRatings'
 
 
 
@@ -28,6 +29,7 @@ function App() {
           <Route path="/mylist" element = {<MyList />}/>
           <Route path="/analysis" element = {<Analysis />}/>
           <Route path="/audience-rating" element = {<AudienceRating />}/>
+          <Route path="/user-ratings" element = {<UserRatings />}/>
           <Route path="/predict-ratings" element = {<PredictRatings />}/>
           <Route path="/viewer-personality" element = {<ViewerPersonality />}/>
           <Route path="/reports" element = {<Reports />}/>
