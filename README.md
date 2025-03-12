@@ -58,8 +58,8 @@ mysql> SELECT 'directors' AS table_name, COUNT(*) AS `rows` FROM directors
 +--------------------+--------+
 | directors          |   4027 |
 | genres             |     20 |
-| lists              |      1 |
-| list_movies        |      2 |
+| lists              |      2 |
+| list_movies        |      1 |
 | movies             |   9742 |
 | movie_genres       |  22084 |
 | movie_stars        |  38968 |
@@ -90,4 +90,5 @@ mysql> SELECT * FROM personality_rating LIMIT 5;
 5 rows in set (0.00 sec)
 ```
 
-# Data Description (to be added)
+# Data Cleaning Processes 
+([link](backend/database/dataCleaning.md))
