@@ -1,0 +1,58 @@
+services:
+  mysql_db:
+    image: mysql:8.0
+    container_name: movie_festival_db
+    env_file: .env
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./database/updated_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./scripts/initdb.sql:/docker-entrypoint-initdb.d/02_initdb.sql
+    networks:
+      - backend_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+  
+  backend:
+    build: ./backend
+    container_name: movie_festival_backend
+    restart: unless-stopped
+    depends_on:
+      mysql_db:
+        condition: service_healthy
+    ports:
+      - "5001:5000"
+    env_file: .env
+    environment:
+      - MYSQL_HOST=mysql_db
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=movie_festival
+    networks:
+      - backend_network
+    volumes:
+      - ./backend:/app
+    command: python app.py
+
+  frontend:
+    build: ./frontend
+    container_name: movie_festival_frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+    networks:
+      - backend_network
+    volumes:
+    - ./frontend:/app
+    - frontend-node-modules:/app/node_modules
+    command: npm run dev
+
+volumes:
+  mysql-data:
+  frontend-node-modules:
+
+networks:
+  backend_network:
