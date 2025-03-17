@@ -70,11 +70,11 @@ def register():
 
     # Generate a 16-byte random salt
     salt = os.urandom(16)
-    salted_password = password.encode('utf-8') + salt
-    # Hash password
-    hashed_password = bcrypt.generate_password_hash(salted_password).decode('utf-8')
 
-    # Store user
+    # Hash password (bcrypt automatically generates a salt internally)
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+
+    # Store user with separate salt
     new_user = PlannerUser(username=username, password=hashed_password, passwordSalt=salt)
     db.session.add(new_user)
     db.session.commit()
@@ -92,15 +92,11 @@ def login():
 
     user = PlannerUser.query.filter_by(username=username).first()
 
-    if not user :
-        return jsonify({'error': 'Invalid credentials'}), 401
-    
-    salt = user.passwordSalt
-    # Hash the entered password + stored salt
-    salted_password = password.encode('utf-8') + salt
-    if not bcrypt.check_password_hash(user.password, salted_password):
+    if not user:
         return jsonify({'error': 'Invalid credentials'}), 401
 
+    if not bcrypt.check_password_hash(user.password, password):
+        return jsonify({'error': 'Invalid credentials'}), 401
 
     # Generate JWT token
     access_token = create_access_token(identity=user.plannerUserId)
