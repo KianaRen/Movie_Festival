@@ -45,7 +45,7 @@ with app.app_context():
     db.create_all()
 
 
-PLACEHOLDER_USER_ID = 1 
+PLACEHOLDER_USER_ID = 5
 def get_authenticated_user():
     return PLACEHOLDER_USER_ID  # Replace with actual session or token-based authentication
 

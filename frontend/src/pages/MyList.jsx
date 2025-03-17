@@ -138,22 +138,23 @@ const handleRemoveMovie = async (listId, movieId) => {
 
   return (
     <div>
-        <h2>My Movie Lists</h2>
-
-      {Object.keys(movieLists).length > 0 && (
-        <div className="list-navigation">
-          <ul>
-            {Object.entries(movieLists).map(([listId, list]) => (
+      <h2>My Movie Lists</h2>
+  
+      {/* Always show the create button */}
+      <div className="list-navigation">
+        <ul>
+          {Object.entries(movieLists).length > 0 && (
+            Object.entries(movieLists).map(([listId, list]) => (
               <li key={listId} onClick={() => scrollToList(listId)} className="list-nav-item">
                 {list.listTitle}
               </li>
-            ))}
-            <button onClick={createNewList} className="create-list-button">+</button>
-          </ul>
-        </div>
-      )}
-
-    {Object.keys(movieLists).length === 0 ? (
+            ))
+          )}
+          <button onClick={createNewList} className="create-list-button">+</button>
+        </ul>
+      </div>
+  
+      {Object.keys(movieLists).length === 0 ? (
         <p>No movie lists found. Click the button above to create one!</p>
       ) : (
         <div className="my-list-container">
@@ -162,8 +163,8 @@ const handleRemoveMovie = async (listId, movieId) => {
               <div className="list-header">
                 <h3>{list.listTitle}</h3>
                 <div className="list-actions">
-                    <button onClick={() => editList(listId, list.listTitle, list.listDescription)} className="edit-button">Edit</button>
-                    <button onClick={() => deleteList(listId)} className="delete-button">Delete</button>
+                  <button onClick={() => editList(listId, list.listTitle, list.listDescription)} className="edit-button">Edit</button>
+                  <button onClick={() => deleteList(listId)} className="delete-button">Delete</button>
                 </div>
               </div>
               <p className="list-description">{list.listDescription}</p>
@@ -174,15 +175,15 @@ const handleRemoveMovie = async (listId, movieId) => {
                     <div className="movie-list">
                       {movies.map((movie) => (
                         <MovieListCard key={movie.movieId} 
-                        movie={movie} 
-                        onRemove={() => handleRemoveMovie(listId, movie.movieId)}/>
+                          movie={movie} 
+                          onRemove={() => handleRemoveMovie(listId, movie.movieId)} />
                       ))}
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="empty-message">
-                <p className="empty-list-message">No movies in this list yet. Add some!</p>
+                  <p className="empty-list-message">No movies in this list yet. Add some!</p>
                 </div>
               )}
             </div>
@@ -191,6 +192,7 @@ const handleRemoveMovie = async (listId, movieId) => {
       )}
     </div>
   );
+  
 };
 
 export default MyList;
