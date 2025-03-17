@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import "../css/MovieDetail.css";
+import { AuthContext } from '../context/AuthContext';
 
 function MovieDetail() {
     const { id } = useParams();
@@ -9,6 +10,7 @@ function MovieDetail() {
     const [error, setError] = useState(null);
     const [lists, setLists] = useState([]);
     const [selectedListId, setSelectedListId] = useState("");
+    const { user } = useContext(AuthContext);
 
     useEffect(() => {
         axios.get(`/api/movies/${id}`)
@@ -36,6 +38,11 @@ function MovieDetail() {
     }, [id]);
 
     const onListBtnClick = async () => {
+        if (!user) {
+            alert("Please login first!");
+            return;
+        }
+
         if (!selectedListId) {
             alert("Please select a list first!");
             return;
@@ -56,6 +63,13 @@ function MovieDetail() {
         }
     };
 
+    const handleDropdownClick = (e) => {
+        if (!user) {
+            alert("Please login first!");
+            e.preventDefault();  
+        }
+    };
+
     if (error) return <p>{error}</p>;
     if (!movie) return <p>Loading movie details...</p>;
 
@@ -64,7 +78,7 @@ function MovieDetail() {
             <div className="title-section">
                 <h1>{movie.title} ({movie.releaseYear})</h1>
                 <div className="add-to-list">
-                    <select onChange={(e) => setSelectedListId(e.target.value)} className="list-select">
+                    <select onChange={(e) => setSelectedListId(e.target.value)} className="list-select" onClick={handleDropdownClick} disabled={!user}>
                         <option value="">Select a list</option>
                         {lists.map((list) => (
                             <option key={list.listId} value={list.listId}>

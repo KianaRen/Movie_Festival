@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // Import for navigation
+import { useState, useEffect, useContext} from "react";
+import { useNavigate } from "react-router-dom"; 
 import axios from "axios";
 import "../css/MovieCard.css";
+import { AuthContext } from '../context/AuthContext';
 
 const MovieCard = ({ movie }) => {
     const [lists, setLists] = useState([]);
     const [selectedListId, setSelectedListId] = useState("");
-    const navigate = useNavigate(); // React Router navigation function
+    const navigate = useNavigate();
+    const { user } = useContext(AuthContext);
 
     useEffect(() => {
         const fetchLists = async () => {
@@ -16,7 +18,7 @@ const MovieCard = ({ movie }) => {
                     listId, 
                     listTitle: list.listTitle
                 }));
-                setLists(listData); // Store full list objects
+                setLists(listData);
             } catch (error) {
                 console.error("Error fetching lists:", error);
             }
@@ -25,7 +27,12 @@ const MovieCard = ({ movie }) => {
     }, []);
 
     const onListBtnClick = async (e) => {
-        e.stopPropagation(); // Prevent clicking the movie poster
+        e.stopPropagation(); 
+        if (!user) {
+            alert("Please login first!");
+            return;
+        }
+
         if (!selectedListId) {
             alert("Please select a list first!");
             return;
@@ -47,7 +54,12 @@ const MovieCard = ({ movie }) => {
     };
 
     const handleDropdownClick = (e) => {
-        e.stopPropagation(); // Prevent clicking the movie poster
+        e.stopPropagation();
+        if (!user) {
+            e.preventDefault(); 
+            alert("Please login first!");
+            return;
+        }
     };
 
     const goToMovieDetail = () => {
@@ -60,7 +72,7 @@ const MovieCard = ({ movie }) => {
                 <img src={movie.posterURL} alt={movie.title} />
                 {/* Movie actions (dropdown and button) */}
                 <div className="movie-actions" onClick={(e) => e.stopPropagation()}>
-                    <select className="list-select" onChange={(e) => setSelectedListId(e.target.value)} onClick={handleDropdownClick}>
+                    <select className="list-select" onChange={(e) => setSelectedListId(e.target.value)} onClick={handleDropdownClick} disabled={!user}>
                         <option value="">Select a list</option>
                         {lists.map((list) => (
                             <option key={list.listId} value={list.listId}>

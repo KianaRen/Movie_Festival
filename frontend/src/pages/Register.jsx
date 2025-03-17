@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import "../css/Login.css";
 
 const Register = () => {
     const [username, setUsername] = useState("");
@@ -22,23 +23,25 @@ const Register = () => {
     };
 
     return (
-        <div>
-            <h2>Register</h2>
-            {error && <p style={{ color: "red" }}>{error}</p>}
-            <form onSubmit={handleRegister}>
+        <div className="login-container"> 
+            <form className="login-form" onSubmit={handleRegister}> 
+                <h2>Register</h2>
+                {error && <p className="error-message">{error}</p>}
                 <input
                     type="text"
+                    className="input-field" 
                     placeholder="Username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                 />
                 <input
                     type="password"
+                    className="input-field"  
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                 />
-                <button type="submit">Register</button>
+                <button type="submit" className="login-button">Register</button>  
             </form>
         </div>
     );
