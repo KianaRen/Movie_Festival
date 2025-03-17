@@ -2,23 +2,27 @@ from database.db import get_db_connection  # Import database connection
 import json
 import pandas as pd
 import numpy as np
+import os
+from flask import Flask, request, jsonify
+from flask_cors import CORS, cross_origin
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import cross_val_score
 import statsmodels.api as sm
-from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, JWTManager
-from flask_cors import CORS
 
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS to allow frontend requests
+#CORS(app)  # Enable CORS to allow frontend requests
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://app_user:user_password@movie_festival_db/movie_festival'
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://kiana:password@movie_festival_db/movie_festival'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = 'your_secret_key'
+
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
@@ -29,6 +33,14 @@ class User(db.Model):
     username = db.Column(db.String(50), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
 
+class PlannerUser(db.Model):
+    __tablename__ = 'planner_user' 
+
+    plannerUserId = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    username = db.Column(db.String(30), unique=True, nullable=False)
+    password = db.Column(db.String(128), nullable=False)  # Store the hashed password
+    passwordSalt = db.Column(db.LargeBinary(16), nullable=False)  # Store the salt
+
 with app.app_context():
     db.create_all()
 
@@ -36,6 +48,70 @@ with app.app_context():
 PLACEHOLDER_USER_ID = 1 
 def get_authenticated_user():
     return PLACEHOLDER_USER_ID  # Replace with actual session or token-based authentication
+
+@app.after_request
+def apply_cors_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"  # Allow all origins inside Docker network
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    return response
+
+# Register Route
+@app.route('/api/register', methods=['POST'])
+@cross_origin()
+def register():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+
+    if not username or not password:
+        return jsonify({'error': 'Username and password required'}), 400
+
+    # Generate a 16-byte random salt
+    salt = os.urandom(16)
+    salted_password = password.encode('utf-8') + salt
+    # Hash password
+    hashed_password = bcrypt.generate_password_hash(salted_password).decode('utf-8')
+
+    # Store user
+    new_user = PlannerUser(username=username, password=hashed_password, passwordSalt=salt)
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({'message': 'User registered successfully'}), 201
+
+
+# Login Route
+@app.route('/api/login', methods=['POST'])
+@cross_origin()
+def login():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+
+    user = PlannerUser.query.filter_by(username=username).first()
+
+    if not user :
+        return jsonify({'error': 'Invalid credentials'}), 401
+    
+    salt = user.passwordSalt
+    # Hash the entered password + stored salt
+    salted_password = password.encode('utf-8') + salt
+    if not bcrypt.check_password_hash(user.password, salted_password):
+        return jsonify({'error': 'Invalid credentials'}), 401
+
+
+    # Generate JWT token
+    access_token = create_access_token(identity=user.plannerUserId)
+    return jsonify({'access_token': access_token, 'message': 'Login successful'}), 200
+
+
+# Protected Route (Example)
+@app.route('/protected', methods=['GET'])
+@jwt_required()
+def protected():
+    return jsonify({'message': 'You are viewing a protected route'})
 
 # create a new list for the user
 @app.route('/api/mylist/create', methods=['POST'])
@@ -68,6 +144,7 @@ def create_list():
     finally:
         cursor.close()
         connection.close()
+
 
 # fetch all the lists created by the user
 @app.route('/api/mylist', methods=['GET'])

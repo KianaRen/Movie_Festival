@@ -11,11 +11,11 @@ const Register = () => {
     const handleRegister = async (e) => {
         e.preventDefault();
         try {
-            await axios.post("http://127.0.0.1:5000/register", {
+            await axios.post("/api/register", {
                 username,
                 password,
-            });
-            navigate("/login"); // Redirect to login after registering
+            },{ withCredentials: true } );
+            navigate("/login");
         } catch (err) {
             setError("Registration failed");
         }

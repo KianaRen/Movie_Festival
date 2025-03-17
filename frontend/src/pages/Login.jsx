@@ -13,10 +13,10 @@ const Login = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post("http://127.0.0.1:5000/login", {
+            const response = await axios.post("/api/login", {
                 username,
                 password,
-            });
+            },{ withCredentials: true } );
 
             login(response.data.access_token, username);
             navigate("/dashboard"); // Redirect to dashboard
