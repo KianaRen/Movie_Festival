@@ -12,6 +12,7 @@ import statsmodels.api as sm
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, JWTManager
+from dotenv import load_dotenv 
 
 
 app = Flask(__name__)
@@ -19,7 +20,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://kiana:password@movie_festival_db/movie_festival'
+app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}@movie_festival_db/movie_festival"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = 'your_secret_key'
 app.config['SECRET_KEY'] = 'my_secret_key' 

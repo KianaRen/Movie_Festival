@@ -7,6 +7,7 @@ import NavBar from './components/NavBar';
 import { Routes, Route } from 'react-router-dom';
 import MovieDetail from './pages/MovieDetail';
 import GenreRatings from './pages/GenreRatings';
+import UserRatings from './pages/UserRatings';
 import AudienceRating from './pages/AudienceRating';
 import PredictRatings from './pages/PredictRatings';
 import ViewerPersonality from './pages/ViewerPersonality';
@@ -75,6 +76,12 @@ function App() {
               path="/genre-ratings"
               element={
                   <GenreRatings />
+              }
+            />
+             <Route
+              path="/user-ratings"
+              element={
+                  <UserRatings />
               }
             />
             <Route
