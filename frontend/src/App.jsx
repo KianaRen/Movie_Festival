@@ -13,7 +13,6 @@ import PredictRatings from './pages/PredictRatings';
 import ViewerPersonality from './pages/ViewerPersonality';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -32,9 +31,7 @@ function App() {
             <Route
               path="/dashboard"
               element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
+                  <Home />
               }
             />
             <Route
@@ -48,57 +45,43 @@ function App() {
             <Route
               path="/analysis"
               element={
-                <ProtectedRoute>
                   <Analysis />
-                </ProtectedRoute>
               }
             />
             <Route
               path="/audience-rating"
               element={
-                <ProtectedRoute>
                   <AudienceRating />
-                </ProtectedRoute>
               }
             />
             <Route
               path="/predict-ratings"
               element={
-                <ProtectedRoute>
                   <PredictRatings />
-                </ProtectedRoute>
               }
             />
             <Route
               path="/viewer-personality"
               element={
-                <ProtectedRoute>
                   <ViewerPersonality />
-                </ProtectedRoute>
               }
             />
             <Route
               path="/reports"
               element={
-                <ProtectedRoute>
                   <Reports />
-                </ProtectedRoute>
               }
             />
             <Route
               path="/genre-ratings"
               element={
-                <ProtectedRoute>
                   <GenreRatings />
-                </ProtectedRoute>
               }
             />
             <Route
               path="/dashboard/:id"
               element={
-                <ProtectedRoute>
                   <MovieDetail />
-                </ProtectedRoute>
               }
             />
           </Routes>
