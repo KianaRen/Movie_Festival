@@ -3,7 +3,7 @@ import json
 import pandas as pd
 import numpy as np
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, session
 from flask_cors import CORS, cross_origin
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.linear_model import LinearRegression
@@ -22,6 +22,7 @@ CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://kiana:password@movie_festival_db/movie_festival'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = 'your_secret_key'
+app.config['SECRET_KEY'] = 'my_secret_key' 
 
 
 db = SQLAlchemy(app)
@@ -47,6 +48,10 @@ with app.app_context():
 
 PLACEHOLDER_USER_ID = 5
 def get_authenticated_user():
+    user_id = session.get('plannerUserId')
+    return user_id
+    
+def get_authenticated_user1():
     return PLACEHOLDER_USER_ID  # Replace with actual session or token-based authentication
 
 @app.after_request
@@ -100,6 +105,7 @@ def login():
 
     # Generate JWT token
     access_token = create_access_token(identity=user.plannerUserId)
+    session['plannerUserId'] = user.plannerUserId
     return jsonify({'access_token': access_token, 'message': 'Login successful'}), 200
 
 
