@@ -3,7 +3,7 @@
 # Entity Relationship Diagram
 ![ERD](backend/database/ERD-v2-Normalised.png)
 
-# Part A - Setup
+# Setup
 1. Create a file named `.env` in the root directory.
 
 Example:
@@ -15,9 +15,9 @@ MYSQL_PASSWORD=user_password
 ```
 
 2. 
-Method 1. Download `initdb.sql` from [here]() and place it in `scripts/` (recommanded)
+Method 1. Download `initdb.sql` from [here](https://liveuclac-my.sharepoint.com/:u:/g/personal/zcakcwh_ucl_ac_uk/EQmbbPY5oXJCtqaontocTHoBwAb9e7GMXRBiA6We_fN_4Q?e=6U0jyE) and place it in `scripts/` (recommanded)
 
-Method 2. Download all 12 csv from [here](https://liveuclac-my.sharepoint.com/:f:/g/personal/zcakcwh_ucl_ac_uk/El9AhVE4phRAmTJWq1BqPP0BV7RxJAE6Htl-0hgxmZGTSw?e=z59Zga) and replace the files in `backend/database/cleaned/`. Then run the following to generate `initdb.sql`:
+Method 2. Download all [12 csv](https://liveuclac-my.sharepoint.com/:f:/g/personal/zcakcwh_ucl_ac_uk/El9AhVE4phRAmTJWq1BqPP0BV7RxJAE6Htl-0hgxmZGTSw?e=U3PpId) and replace the files in `backend/database/cleaned/`. Then run the following to generate `initdb.sql`:
 ```
 python3 scripts/CSV_to_INSERT.py
 ```
@@ -55,14 +55,14 @@ mysql> SELECT 'directors' AS table_name, COUNT(*) AS `rows` FROM directors
 +--------------------+--------+
 | directors          |   4027 |
 | genres             |     20 |
-| lists              |      2 |
-| list_movies        |      1 |
+| lists              |      0 |
+| list_movies        |      0 |
 | movies             |   9742 |
 | movie_genres       |  22084 |
 | movie_stars        |  38968 |
 | movie_tags         |   3683 |
 | personality_rating | 920264 |
-| planner_user       |      1 |
+| planner_user       |      0 |
 | ratings            | 100836 |
 | stars              |  15670 |
 | tags               |   1475 |
