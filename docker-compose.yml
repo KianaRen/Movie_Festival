@@ -7,7 +7,7 @@ services:
       - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
-      - .backend/database/updated_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./backend/database/updated_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
       - ./scripts/initdb.sql:/docker-entrypoint-initdb.d/02_initdb.sql
     networks:
       - backend_network

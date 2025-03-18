@@ -15,7 +15,7 @@ MYSQL_PASSWORD=user_password
 ```
 
 2. 
-Method 1. Download `initdb.sql` from [here](https://liveuclac-my.sharepoint.com/:u:/g/personal/zcakcwh_ucl_ac_uk/EQmbbPY5oXJCtqaontocTHoBwAb9e7GMXRBiA6We_fN_4Q?e=6U0jyE) and place it in `scripts/` (recommanded)
+Method 1. Download `initdb.sql` from [here](https://liveuclac-my.sharepoint.com/:u:/g/personal/zcakcwh_ucl_ac_uk/EWgurqlDUdRCnipgBaUsfkoBdgrqb2WtI-Kyc0lLw1RI6A?e=ZwYCY8) and place it in `scripts/` (recommanded)
 
 Method 2. Download all [12 csv](https://liveuclac-my.sharepoint.com/:f:/g/personal/zcakcwh_ucl_ac_uk/El9AhVE4phRAmTJWq1BqPP0BV7RxJAE6Htl-0hgxmZGTSw?e=U3PpId) and replace the files in `backend/database/cleaned/`. Then run the following to generate `initdb.sql`:
 ```

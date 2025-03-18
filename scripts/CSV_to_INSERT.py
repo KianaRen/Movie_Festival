@@ -67,18 +67,3 @@ with open('scripts/initdb.sql', 'w') as outfile:
                         'scripts/insert/insert_personality_rating.sql']:
         with open(insert_file, 'r') as infile:
             outfile.write('\n' + infile.read())
-
-    outfile.write(
-                f"INSERT INTO planner_user (username, passwordSalt, password) "
-                f"VALUES ('mr_smiths', UNHEX('A1B2C3D4E5F6A7B8C9D0E1F2A3B4C5D6'), "
-                f"SHA2(CONCAT('password123', UNHEX('A1B2C3D4E5F6A7B8C9D0E1F2A3B4C5D6')), 256)); \n"
-
-                f"INSERT INTO lists (listTitle, plannerUserId) "
-                f"VALUES ('Favorite', 1); \n"
-
-                f"INSERT INTO lists (listTitle, plannerUserId) "
-                f"VALUES ('Watchlist', 1); \n"
-
-                f"INSERT INTO list_movies(listId, movieId) "
-                f"VALUES (1, 1); \n"
-            )
