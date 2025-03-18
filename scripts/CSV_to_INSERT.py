@@ -35,18 +35,18 @@ def csv_to_sql(csv_path, table_name, id_col, pk_not_included):
 
 
 # Generate INSERT statements for entities in their dependency order
-csv_to_sql(csv_path='database/cleaned/genres.csv', table_name='genres', id_col='genreId', pk_not_included=False)
-csv_to_sql('database/cleaned/directors.csv', 'directors', 'directorId', False)
-csv_to_sql('database/cleaned/tags.csv', 'tags', 'tagId', False)
-csv_to_sql('database/cleaned/users.csv', 'users', 'userId', False)
-csv_to_sql('database/cleaned/userPersonality.csv', 'user_personality', 'useri', True)
-csv_to_sql('database/cleaned/stars.csv', 'stars', 'starId', False)
-csv_to_sql('database/cleaned/movies.csv', 'movies', 'movieId', False)
-csv_to_sql('database/cleaned/movieGenres.csv', 'movie_genres', 'movieGenreId', True)
-csv_to_sql('database/cleaned/movieTags.csv', 'movie_tags', 'movieTagId', True)
-csv_to_sql('database/cleaned/movieStars.csv', 'movie_stars', 'movieStarId', True)
-csv_to_sql('database/cleaned/ratings.csv', 'ratings', 'ratingId', True)
-csv_to_sql('database/cleaned/personalityRating.csv', 'personality_rating', 'ratingId', True)
+csv_to_sql(csv_path='backend/database/cleaned/genres.csv', table_name='genres', id_col='genreId', pk_not_included=False)
+csv_to_sql('backend/database/cleaned/directors.csv', 'directors', 'directorId', False)
+csv_to_sql('backend/database/cleaned/tags.csv', 'tags', 'tagId', False)
+csv_to_sql('backend/database/cleaned/users.csv', 'users', 'userId', False)
+csv_to_sql('backend/database/cleaned/userPersonality.csv', 'user_personality', 'useri', True)
+csv_to_sql('backend/database/cleaned/stars.csv', 'stars', 'starId', False)
+csv_to_sql('backend/database/cleaned/movies.csv', 'movies', 'movieId', False)
+csv_to_sql('backend/database/cleaned/movieGenres.csv', 'movie_genres', 'movieGenreId', True)
+csv_to_sql('backend/database/cleaned/movieTags.csv', 'movie_tags', 'movieTagId', True)
+csv_to_sql('backend/database/cleaned/movieStars.csv', 'movie_stars', 'movieStarId', True)
+csv_to_sql('backend/database/cleaned/ratings.csv', 'ratings', 'ratingId', True)
+csv_to_sql('backend/database/cleaned/personalityRating.csv', 'personality_rating', 'ratingId', True)
 
 
 # Combine INSERTs into initdb.sql

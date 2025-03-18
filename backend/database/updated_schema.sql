@@ -78,16 +78,18 @@ CREATE TABLE movie_genres (
 
 -- Planner-user Table (For authentication)
 CREATE TABLE planner_user (
-    username VARCHAR(30) PRIMARY KEY,
-    password VARCHAR(255) NOT NULL
+    plannerUserId INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(30) UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    passwordSalt BINARY(16) NOT NULL
 );
 
 -- Lists Table (User-created movie lists)
 CREATE TABLE lists (
     listId INT PRIMARY KEY AUTO_INCREMENT,
     listTitle VARCHAR(255),
-    username VARCHAR(30),
-    FOREIGN KEY (username) REFERENCES planner_user(username) ON DELETE CASCADE
+    plannerUserId INT,
+    FOREIGN KEY (plannerUserId) REFERENCES planner_user(plannerUserId) ON DELETE CASCADE
 );
 
 -- Movie-Lists Relationship Table (Many-to-Many)

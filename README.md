@@ -1,9 +1,9 @@
 # Movie_Festival
 
 # Entity Relationship Diagram
-![ERD](database/ERD-v2-Normalised.png)
+![ERD](backend/database/ERD-v2-Normalised.png)
 
-# Part A - Setup the Database
+# Part A - Setup
 1. Create a file named `.env` in the root directory.
 
 Example:
@@ -14,14 +14,11 @@ MYSQL_USER=app_user
 MYSQL_PASSWORD=user_password
 ```
 
-2. Pull `initdb.sql` from LFS to insert data into the database upon container creation:
-```
-git lfs pull --include="scripts/initdb.sql"
-```
+2. 
+Method 1. Download `initdb.sql` from [here]() and place it in `scripts/` (recommanded)
 
-Alternatively, you can pull all the cleaned csv and run `CSV_to_INSERT.py`. This will generate the same `initdb.sql`:
+Method 2. Download all 12 csv from [here](https://liveuclac-my.sharepoint.com/:f:/g/personal/zcakcwh_ucl_ac_uk/El9AhVE4phRAmTJWq1BqPP0BV7RxJAE6Htl-0hgxmZGTSw?e=z59Zga) and replace the files in `backend/database/cleaned/`. Then run the following to generate `initdb.sql`:
 ```
-git lfs pull --include="database/cleaned/*"
 python3 scripts/CSV_to_INSERT.py
 ```
 
