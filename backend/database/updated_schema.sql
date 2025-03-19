@@ -88,6 +88,7 @@ CREATE TABLE planner_user (
 CREATE TABLE lists (
     listId INT PRIMARY KEY AUTO_INCREMENT,
     listTitle VARCHAR(255),
+    listDescription VARCHAR(255),
     plannerUserId INT,
     FOREIGN KEY (plannerUserId) REFERENCES planner_user(plannerUserId) ON DELETE CASCADE
 );

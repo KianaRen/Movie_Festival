@@ -117,7 +117,7 @@ const handleRemoveMovie = async (listId, movieId) => {
             }
             }
     
-            // ✅ Instead of deleting the list, keep it and ensure `moviesByGenre` is an empty object
+            // Instead of deleting the list, keep it and ensure `moviesByGenre` is an empty object
             if (Object.keys(updatedLists[listId].moviesByGenre).length === 0) {
             updatedLists[listId].moviesByGenre = {}; // Keep the list with an empty movies object
             }
